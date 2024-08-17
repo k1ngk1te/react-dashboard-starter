@@ -1,17 +1,16 @@
 import { Tag as AntdTag } from 'antd';
-import React from 'react';
 
 import classNames from '../../utils/classnames';
 
 import type { TagProps } from 'antd';
 
 export type TagType = Omit<TagProps, 'icon'> & {
-  icon?: React.ComponentType<any>;
+  icon?: () => JSX.Element;
 };
 
 function Tag({ title, icon: Icon, className, ...props }: TagType) {
   const classes = classNames(
-    'inline-flex items-center px-2 py-1 w-auto text-sm md:px-4 md:py-2 md:text-base',
+    'inline-flex items-center px-4 py-2 w-auto text-base',
     className || ''
   );
 

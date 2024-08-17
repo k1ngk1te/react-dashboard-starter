@@ -1,8 +1,10 @@
-export function contains(value: string | number, search: string) {
-  const normalize = (str: string) => str.toLowerCase().split(' ').sort().join(' ');
+export function contains(
+	targetName: string | number = '',
+	searchQuery: string = ''
+) {
+	const searchWords = searchQuery.toLowerCase().split(' ');
+	const targetNameLower = targetName.toString().toLowerCase();
 
-  const normalized1 = normalize(String(value).toLowerCase());
-  const normalized2 = normalize(String(search).toLowerCase());
-
-  return normalized2.split(' ').every((word) => normalized1.includes(word));
+	// Check if all words in the search query exist in the target name
+	return searchWords.every((word) => targetNameLower.includes(word));
 }

@@ -6,6 +6,7 @@ import React from 'react';
 import classNames from '../../utils/classnames';
 
 import type { InputProps, InputNumberProps, InputRef } from 'antd';
+import type { SearchProps } from 'antd/es/input';
 import type { TextAreaRef, TextAreaProps } from 'antd/es/input/TextArea';
 
 type InputType = InputProps & {
@@ -26,20 +27,30 @@ type InputOTPType = InputOTPProps & {
   label?: string;
 };
 
+type InputSearchType = SearchProps & {
+  error?: string;
+  icon?: ({ className }: { className?: string }) => React.ReactNode;
+  label?: string;
+};
+
 type TextAreaType = TextAreaProps & {
   error?: string;
   label?: string;
 };
 
-const classes = 'form-field-item';
-
 const Input = React.forwardRef<InputRef, InputType>(
-  ({ error, label, icon: Icon, className: propsClassName, ...props }, ref) => {
-    const className = classNames(classes, propsClassName || '');
+  ({ className: propsClassName, error, label, icon: Icon, ...props }, ref) => {
+    const className = classNames(
+      'border border-gray-300 font-medium rounded-md text-sm md:text-base',
+      propsClassName || ''
+    );
     return (
       <>
         {label && (
-          <label className={`${error ? 'text-red-500' : ''} form-field-label`} htmlFor={props.id}>
+          <label
+            className={`${error ? '!text-red-500' : 'text-gray-600'} form-field-label`}
+            htmlFor={props.id}
+          >
             {label}
           </label>
         )}
@@ -49,7 +60,7 @@ const Input = React.forwardRef<InputRef, InputType>(
           status={error ? 'error' : undefined}
           className={className}
           size="large"
-          required={false}
+          required
           ref={ref}
           prefix={
             Icon ? (
@@ -58,19 +69,34 @@ const Input = React.forwardRef<InputRef, InputType>(
               </span>
             ) : undefined
           }
+          id={props.name}
           {...props}
         />
+
+        {error && <span className="block !text-red-500 form-field-label">{error}</span>}
       </>
     );
   }
 );
 
-export const InputNumber = ({ error, label, icon: Icon, ...props }: InputNumberType) => {
-  const className = classNames(classes, props.className || '');
+export const InputNumber = ({
+  className: propsClassName,
+  error,
+  label,
+  icon: Icon,
+  ...props
+}: InputNumberType) => {
+  const className = classNames(
+    'border border-gray-300 font-medium rounded-md text-sm w-full md:text-base',
+    propsClassName || ''
+  );
   return (
     <>
       {label && (
-        <label className={`${error ? 'text-red-500' : ''} form-field-label`} htmlFor={props.id}>
+        <label
+          className={`${error ? '!text-red-500' : 'text-gray-600'} form-field-label`}
+          htmlFor={props.id}
+        >
           {label}
         </label>
       )}
@@ -90,17 +116,25 @@ export const InputNumber = ({ error, label, icon: Icon, ...props }: InputNumberT
         // ref={ref}
         {...props}
       />
+
+      {error && <span className="block !text-red-500 form-field-label">{error}</span>}
     </>
   );
 };
 
 export const InputPassword = React.forwardRef<InputRef, InputType>(
-  ({ error, label, icon: Icon, ...props }, ref) => {
-    const className = classNames(classes, props.className || '');
+  ({ className: propsClassName, error, label, icon: Icon, ...props }, ref) => {
+    const className = classNames(
+      'border border-gray-300 font-medium rounded-md text-sm md:text-base',
+      propsClassName || ''
+    );
     return (
       <>
         {label && (
-          <label className={`${error ? 'text-red-500' : ''} form-field-label`} htmlFor={props.id}>
+          <label
+            className={`${error ? '!text-red-500' : 'text-gray-600'} form-field-label`}
+            htmlFor={props.id}
+          >
             {label}
           </label>
         )}
@@ -111,12 +145,12 @@ export const InputPassword = React.forwardRef<InputRef, InputType>(
           status={error ? 'error' : undefined}
           iconRender={(visible) =>
             !visible ? (
-              <span>
-                <EyeOutlined className="cursor-pointer text-sm" />
+              <span className="text-primary-500 text-sm cursor-pointer">
+                <EyeOutlined />
               </span>
             ) : (
-              <span>
-                <EyeInvisibleOutlined className="cursor-pointer text-sm" />
+              <span className="text-primary-500 text-sm cursor-pointer">
+                <EyeInvisibleOutlined />
               </span>
             )
           }
@@ -132,18 +166,68 @@ export const InputPassword = React.forwardRef<InputRef, InputType>(
           ref={ref}
           {...props}
         />
+
+        {error && <span className="block !text-red-500 form-field-label">{error}</span>}
+      </>
+    );
+  }
+);
+
+export const InputSearch = React.forwardRef<InputRef, InputSearchType>(
+  ({ className: propsClassName, error, label, icon: Icon, ...props }, ref) => {
+    const className = classNames(
+      'border border-gray-300 font-medium rounded-md text-sm md:text-base',
+      propsClassName || ''
+    );
+    return (
+      <>
+        {label && (
+          <label
+            className={`${error ? '!text-red-500' : 'text-gray-600'} form-field-label`}
+            htmlFor={props.id}
+          >
+            {label}
+          </label>
+        )}
+
+        <AntdInput.Search
+          allowClear
+          status={error ? 'error' : undefined}
+          className={className}
+          size="large"
+          required
+          ref={ref}
+          prefix={
+            Icon ? (
+              <span className="pr-2">
+                <Icon className="text-xs text-primary-500" />
+              </span>
+            ) : undefined
+          }
+          id={props.name}
+          enterButton
+          {...props}
+        />
+
+        {error && <span className="block !text-red-500 form-field-label">{error}</span>}
       </>
     );
   }
 );
 
 export const Textarea = React.forwardRef<TextAreaRef, TextAreaType>(
-  ({ error, label, ...props }, ref) => {
-    const className = classNames(classes, props.className || '');
+  ({ className: propsClassName, error, label, ...props }, ref) => {
+    const className = classNames(
+      'border border-gray-300 font-medium rounded-md text-sm md:text-base',
+      propsClassName || ''
+    );
     return (
       <>
         {label && (
-          <label className={`${error ? 'text-red-500' : ''} form-field-label`} htmlFor={props.id}>
+          <label
+            className={`${error ? '!text-red-500' : 'text-gray-600'} form-field-label`}
+            htmlFor={props.id}
+          >
             {label}
           </label>
         )}
@@ -159,16 +243,10 @@ export const Textarea = React.forwardRef<TextAreaRef, TextAreaType>(
           size="large"
           required={false}
           ref={ref}
-          style={{
-            fontSize: 'inherit',
-          }}
-          styles={{
-            textarea: {
-              color: 'inherit',
-            },
-          }}
           {...props}
         />
+
+        {error && <span className="block !text-red-500 form-field-label">{error}</span>}
       </>
     );
   }

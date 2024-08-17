@@ -11,17 +11,14 @@ export type ButtonType = Omit<ButtonProps, 'icon'> & {
 };
 
 function Button({
+  className: propsClassName,
   children,
   icon: Icon,
   iconClass = 'text-lg',
   wrap = true,
-  className: propsClassName,
   ...props
 }: ButtonType) {
-  const className = classNames(
-    'flex items-center justify-center rounded-md dark:shadow-none',
-    propsClassName || ''
-  );
+  const className = classNames('flex items-center justify-center rounded-md', propsClassName || '');
 
   const iconClassName = classNames('text-sm', iconClass);
   return (

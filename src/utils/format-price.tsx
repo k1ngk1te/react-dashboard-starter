@@ -1,55 +1,35 @@
-// function formatPrice(priceValue?: string | number) {
-//   const NairaFormatter = new Intl.NumberFormat('en-NG', {
-//     style: 'currency',
-//     maximumFractionDigits: 2,
-//     minimumFractionDigits: 2,
-//     // currencySign: 'NGN',
-//     currency: 'NGN',
-//     // currencyDisplay: 'NGN'
-//   });
-
-//   if (!priceValue) return { price: '0.00', value: NairaFormatter.format(0) };
-//   if (typeof priceValue === 'string') {
-//     const parsedValue = parseFloat(priceValue.trim());
-//     if (isNaN(parsedValue)) return { price: priceValue, value: NairaFormatter.format(0) };
-//   }
-
-//   const value = typeof priceValue === 'string' ? parseFloat(priceValue.trim()) : priceValue;
-
-//   return {
-//     price: value.toFixed(2),
-//     value: NairaFormatter.format(value),
-//   };
-// }
-
-// export default formatPrice;
-
 function formatPrice(data?: unknown) {
-  const NairaFormatter = new Intl.NumberFormat('en-NG', {
-    style: 'currency',
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 2,
-    // currencySign: 'NGN',
-    currency: 'NGN',
-    // currencyDisplay: 'NGN'
-  });
+	const NairaFormatter = new Intl.NumberFormat('en-NG', {
+		style: 'currency',
+		maximumFractionDigits: 2,
+		minimumFractionDigits: 2,
+		// currencySign: 'NGN',
+		currency: 'NGN',
+		// currencyDisplay: 'NGN'
+	});
 
-  if (!data || (typeof data !== 'number' && typeof data !== 'string') || isNaN(+data))
-    return { price: '0.00', value: NairaFormatter.format(0) };
+	if (
+		!data ||
+		(typeof data !== 'number' && typeof data !== 'string') ||
+		isNaN(+data)
+	)
+		return { price: '0.00', value: NairaFormatter.format(0) };
 
-  const priceValue = data as string | number;
+	const priceValue = data as string | number;
 
-  if (typeof priceValue === 'string') {
-    const parsedValue = parseFloat(priceValue.trim());
-    if (isNaN(parsedValue)) return { price: priceValue, value: NairaFormatter.format(0) };
-  }
+	if (typeof priceValue === 'string') {
+		const parsedValue = parseFloat(priceValue.trim());
+		if (isNaN(parsedValue))
+			return { price: priceValue, value: NairaFormatter.format(0) };
+	}
 
-  const value = typeof priceValue === 'string' ? parseFloat(priceValue.trim()) : priceValue;
+	const value =
+		typeof priceValue === 'string' ? parseFloat(priceValue.trim()) : priceValue;
 
-  return {
-    price: value.toFixed(2),
-    value: NairaFormatter.format(value),
-  };
+	return {
+		price: value.toFixed(2),
+		value: NairaFormatter.format(value),
+	};
 }
 
 export default formatPrice;

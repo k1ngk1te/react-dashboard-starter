@@ -3,8 +3,6 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import React from 'react';
 
-import { classNames } from '../../utils';
-
 import type { DatePickerProps } from 'antd';
 
 dayjs.extend(customParseFormat);
@@ -13,24 +11,10 @@ type DatePickerType = Omit<DatePickerProps, 'defaultValue'> & {
   defaultValue?: string | dayjs.Dayjs | Date;
   error?: string;
   label?: string;
-  labelClassName?: string;
 };
 
-function DatePicker({
-  className,
-  label,
-  labelClassName,
-  error,
-  id,
-  onChange,
-  defaultValue,
-  value,
-  ...props
-}: DatePickerType) {
+function DatePicker({ label, error, id, onChange, defaultValue, value, ...props }: DatePickerType) {
   // const [inputValue, setValue] = React.useState<string>();
-
-  const classes = classNames('text-sm w-full lg:text-base', className || '');
-  const labelClass = classNames('form-field-label', labelClassName || '');
 
   const controlDefaultValue = React.useMemo(() => {
     if (!defaultValue) return undefined;
@@ -60,12 +44,15 @@ function DatePicker({
   return (
     <>
       {label && (
-        <label className={`${error ? 'text-red-500' : ''} ${labelClass}`} htmlFor={id}>
+        <label
+          className={`${error ? '!text-red-500' : 'text-gray-600'} form-field-label`}
+          htmlFor={id}
+        >
           {label}
         </label>
       )}
       <AntdDatePicker
-        className={classes}
+        className="text-sm w-full lg:text-base"
         status={error ? 'error' : undefined}
         size="large"
         onChange={(date, dateString) => {

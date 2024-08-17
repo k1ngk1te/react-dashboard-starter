@@ -4,7 +4,7 @@ import React from 'react';
 import type { ButtonProps } from 'antd';
 import classNames from '../../utils/classnames';
 
-type ButtonType = Omit<ButtonProps, 'icon'> & {
+export type ButtonType = Omit<ButtonProps, 'icon'> & {
   icon?: ({ className }: { className?: string }) => React.ReactNode;
 };
 

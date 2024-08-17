@@ -1,47 +1,41 @@
-import { Upload as AntdUpload } from 'antd';
+import { CloudUploadOutlined } from '@ant-design/icons';
+import { Upload as AntdUpload, UploadFile, UploadProps } from 'antd';
+import React from 'react';
 
-import type { UploadProps } from 'antd';
-
-import classNames from '../../utils/classnames';
+import Button from './button';
 
 export type UploadType = UploadProps & {
   error?: string;
-  label?: string;
-  labelClassName?: string;
+  placeholder?: string;
 };
 
-function Upload({ label, labelClassName, error, ...props }: UploadType) {
-  const labelClass = classNames('form-field-label', labelClassName || '');
+function Upload({ children, error, placeholder = 'Upload', ...props }: UploadType) {
+  const [fileList, setFileList] = React.useState<UploadFile[]>([]);
 
   return (
     <>
-      {label && (
-        <label className={`${error ? 'text-red-500' : ''} ${labelClass}`} htmlFor={props.id}>
-          {label}
-        </label>
-      )}
-      <AntdUpload style={{ width: '100%' }} {...props} />
-    </>
-  );
-}
+      <AntdUpload
+        beforeUpload={(file) => {
+          setFileList([...fileList, file]);
 
-export function UploadDragger({ label, labelClassName, error, ...props }: UploadType) {
-  const labelClass = classNames('form-field-label', labelClassName || '');
-
-  return (
-    <>
-      {label && (
-        <label className={`${error ? 'text-red-500' : ''} ${labelClass}`} htmlFor={props.id}>
-          {label}
-        </label>
-      )}
-      <AntdUpload.Dragger style={{ width: '100%' }} {...props} />
-
-      {/* <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                <p className="ant-upload-hint">
-                  Support for a single or bulk upload. Strictly prohibited from uploading company
-                  data or other banned files.
-                </p> */}
+          return false;
+        }}
+        fileList={fileList}
+        onRemove={(file) => {
+          const index = fileList.indexOf(file);
+          const newFileList = fileList.slice();
+          newFileList.splice(index, 1);
+          setFileList(newFileList);
+        }}
+        {...props}
+      >
+        {children || (
+          <Button icon={CloudUploadOutlined} htmlType="button" type="default">
+            {placeholder}
+          </Button>
+        )}
+      </AntdUpload>
+      {error && <span className="block !text-red-500 form-field-label">{error}</span>}
     </>
   );
 }

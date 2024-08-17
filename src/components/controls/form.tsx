@@ -1,10 +1,13 @@
 import { Form as AntdForm } from 'antd';
+import React from 'react';
 
 import type { FormProps } from 'antd';
 
-export type FormType = FormProps;
+type FormType = Omit<FormProps, 'children'> & {
+  children: React.ReactNode;
+};
 
-function Form({ ...props }) {
+function Form(props: FormType) {
   return <AntdForm layout="vertical" {...props} />;
 }
 

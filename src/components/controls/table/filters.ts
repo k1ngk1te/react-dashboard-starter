@@ -38,7 +38,7 @@ containsFilter.autoRemove = (val: any) => !val;
 const dateRangeFilter = <TData extends Record<string, any> = object>(
   row: Row<TData>,
   id: string,
-  filterValue: (dayjs.Dayjs | Date | string)[] = []
+  filterValue: (Date | string)[] = []
 ) => {
   if (!Array.isArray(filterValue)) return true;
 

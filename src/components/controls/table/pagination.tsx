@@ -13,7 +13,7 @@ function Pagination({
   canNextPage,
   canPreviousPage,
   gotoPage,
-  maxPages = 5,
+  maxPages = 10,
   nextPage,
   pageCount,
   pageIndex,
@@ -78,7 +78,7 @@ function Pagination({
   }, [pageLength, pageIndex, maxPages, pageSize]);
 
   return (
-    <div className="my-2 py-3 flex items-center justify-between">
+    <div className="table-tools-container border-t-0 rounded-b-lg flex items-center justify-between">
       <div className="flex-1 flex justify-between sm:hidden">
         <Button onClick={previousPage} disabled={!canPreviousPage}>
           Previous

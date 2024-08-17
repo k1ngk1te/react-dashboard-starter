@@ -12,13 +12,19 @@ type CheckboxType = CheckboxProps & {
 function Checkbox({ label, error, placeholder, ...props }: CheckboxType) {
   return (
     <>
+      {' '}
       {label && (
-        <label className={`${error ? 'text-red-500' : ''} form-field-label`} htmlFor={props.id}>
+        <label
+          className={`${
+            error ? 'text-red-500' : 'text-gray-600'
+          } block font-semibold my-1 text-xs  sm:text-sm`}
+          htmlFor={props.id}
+        >
           {label}
         </label>
       )}
       <AntdCheckbox defaultChecked={false} {...props}>
-        <span className={`${error ? 'text-red-500' : ''} form-field-label`}>{placeholder}</span>
+        {placeholder}
       </AntdCheckbox>
     </>
   );

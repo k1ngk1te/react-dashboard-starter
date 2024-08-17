@@ -14,7 +14,7 @@ export function Button({ children, className = '', disabled, ...rest }: ButtonTy
       className={classNames(
         `${
           disabled ? 'cursor-not-allowed' : 'cursor-pointer'
-        } bg-white border border-gray-300 font-medium inline-flex items-center px-4 py-2 relative rounded-md text-gray-700 text-sm dark:bg-gray-900 dark:text-gray-300 hover:dark:bg-gray-800 hover:bg-gray-50`,
+        } bg-white border border-gray-300 font-medium inline-flex items-center px-4 py-2 relative rounded-md text-gray-700 text-sm hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:hover:dark-gray-900`,
         className
       )}
       type="button"
@@ -35,8 +35,8 @@ export function PageButton({ active, children, className = '', disabled, ...rest
           active
             ? 'bg-primary-500 border border-primary-500 text-gray-100'
             : disabled
-            ? 'border-gray-300 bg-gray-200 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500 text-gray-500'
-            : 'border-gray-300 bg-white cursor-pointer text-gray-500 dark:border-gray-500 dark:bg-gray-900 dark:text-gray-300 hover:dark:bg-gray-800 hover:bg-gray-100'
+            ? 'border-gray-300 bg-gray-200 cursor-not-allowed text-gray-500 dark:bg-gray-900 dark:border-gray-800 dark:text-gray-300'
+            : 'border-gray-300 bg-white cursor-pointer text-gray-500 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:hover:dark-gray-900'
         } font-medium inline-flex items-center p-2 relative text-sm`,
         className
       )}

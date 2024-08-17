@@ -1,6 +1,6 @@
 import type { SortingFn } from '@tanstack/react-table';
 
-const studentColumnSorter: SortingFn<any> = (rowA, rowB) => {
+const studentColumnSorter: SortingFn<any> = (rowA, rowB, _) => {
   const rowAValue =
     (rowA.original.firstname || '').trim() + ' ' + (rowA.original.othernames || '').trim();
   const rowBValue =
