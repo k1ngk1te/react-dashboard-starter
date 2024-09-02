@@ -23,6 +23,10 @@ function App() {
 				algorithm: theme.defaultAlgorithm,
 				components: {
 					DatePicker: formItemStyle,
+					Form: {
+						margin: 8,
+						marginLG: 8, // adjust this value to your liking
+					},
 					InputNumber: formItemStyle,
 					Input: formItemStyle,
 					Message: {

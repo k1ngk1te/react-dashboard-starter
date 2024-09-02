@@ -17,9 +17,9 @@ import type {
 // get auth status
 export function useGetAuthQuery() {
 	const { value: userData } = useLocalStorage<AuthDataType>(USER_DATA_KEY, {
-		initialValue: {
-			email: 'test@gmail.com',
-		},
+		// initialValue: {
+		// 	email: 'test@gmail.com',
+		// },
 		type: 'object',
 	});
 
