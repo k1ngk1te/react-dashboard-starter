@@ -1,13 +1,16 @@
 import { ConfigProvider } from 'antd';
 import { RouterProvider } from 'react-router-dom';
 
-import router from './router';
 import theme from './config/theme';
+import router from './router';
+import GlobalContextProvider from './store/contexts/provider';
 
 function App() {
   return (
     <ConfigProvider theme={theme({ themeValue: 'light' })}>
-      <RouterProvider router={router} />
+      <GlobalContextProvider>
+        <RouterProvider router={router} />
+      </GlobalContextProvider>
     </ConfigProvider>
   );
 }
