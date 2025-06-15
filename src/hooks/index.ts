@@ -8,3 +8,4 @@ export { default as usePathname } from './use-pathname';
 export { default as useSearchParams } from './use-search-params';
 
 export { default as useDebouncedSearchParamInput } from './app/use-debounced-search-param-input';
+export { default as usePageFilters } from './app/use-page-filters';
