@@ -68,9 +68,9 @@ export default function useSearchParams(options?: {
     (name: string, options?: NavigationOptionsType) => {
       setSearchParams((prevParams) => {
         const newParams: Record<string, string> = {};
-        prevParams.forEach((value, _key) => {
-          const key = getKey(_key);
-          if (key !== name) newParams[key] = value;
+        prevParams.forEach((value, currentKey) => {
+          const keyToRemove = getKey(name);
+          if (currentKey !== keyToRemove) newParams[currentKey] = value;
         });
 
         return newParams;
@@ -81,11 +81,11 @@ export default function useSearchParams(options?: {
 
   const removeParams = React.useCallback(
     (keys: string[], options?: NavigationOptionsType) => {
+      const keysToRemove = keys.map((item) => getKey(item));
       setSearchParams((prevParams) => {
         const newParams: Record<string, string> = {};
-        prevParams.forEach((value, _key) => {
-          const key = getKey(_key);
-          if (!keys.includes(key)) newParams[key] = value;
+        prevParams.forEach((value, currentKey) => {
+          if (!keysToRemove.includes(currentKey)) newParams[currentKey] = value;
         });
 
         return newParams;
