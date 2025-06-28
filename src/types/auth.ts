@@ -17,8 +17,9 @@ export type LoginRequestDataType = {
   password: string;
   sendToWhatsapp?: boolean;
 };
-export type LoginResponseDataType = ResponseType<{
+export type LoginResponseType = ResponseType<{
   token: string;
+  user: AuthDataType;
 }>;
 
 export type VerifyLoginRequestDataType = { otp: string };

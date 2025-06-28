@@ -3,14 +3,14 @@ import React from 'react';
 import { useAuthContext } from '../../store/contexts';
 import { useGetAuthQuery } from '../../store/queries/auth';
 import { SplashScreen } from '../../utils/components';
-import type { AuthDataType, ResponseType } from '../../types';
+import type { LoginResponseType } from '../../types';
 
 export default function CheckAuth({
   children,
   initialData,
 }: {
   children: React.ReactNode;
-  initialData?: ResponseType<AuthDataType>;
+  initialData?: LoginResponseType;
 }) {
   const [loading, setLoading] = React.useState(true);
 

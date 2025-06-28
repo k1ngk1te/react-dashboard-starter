@@ -1,33 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useUserContext } from '../contexts';
 import tags from '../tags';
-import { USER_DATA_KEY } from '../../config';
-import { useLocalStorage } from '../../hooks';
-import { AppError } from '../../utils/errors';
-
-import type { AuthDataType, LoginRequestDataType, MutationOptionsType, ResponseType } from '../../types';
+import * as AuthService from '../../server/services/auth.service';
+import type { LoginRequestDataType, LoginResponseType, MutationOptionsType } from '../../types';
 
 // ****** Queries ******
 
 // get auth status
-export function useGetAuthQuery({ initialData }: { initialData?: ResponseType<AuthDataType> }) {
-  const { value: userData } = useLocalStorage<AuthDataType>(USER_DATA_KEY, {
-    // initialValue: {
-    // 	email: 'test@gmail.com',
-    // },
-    type: 'object',
-  });
-
-  const query = useQuery<ResponseType<AuthDataType>>({
+export function useGetAuthQuery({ initialData }: { initialData?: LoginResponseType }) {
+  const query = useQuery<LoginResponseType>({
     queryKey: [tags.Auth],
     async queryFn() {
-      if (!userData) throw new AppError(401);
-
-      return {
-        status: 'success' as const,
-        message: 'Fetched Auth Data',
-        data: userData,
-      };
+      return AuthService.getAuth();
     },
     initialData,
   });
@@ -38,31 +23,10 @@ export function useGetAuthQuery({ initialData }: { initialData?: ResponseType<Au
 // ****** Mutations ******
 
 // login
-export function useLoginMutation(options: MutationOptionsType<AuthDataType>) {
-  const { setValue: setUserData } = useLocalStorage<AuthDataType>(USER_DATA_KEY, {
-    type: 'object',
-  });
-
+export function useLoginMutation(options: MutationOptionsType<LoginResponseType['data']>) {
   const mutation = useMutation({
-    async mutationFn(form: Omit<LoginRequestDataType, 'deviceId'>) {
-      const data = {
-        ...form,
-        id: 1,
-        firstname: 'Adam',
-        middlename: 'Garden',
-        lastname: 'Eve',
-        fullname: 'Adam Garden Eve',
-        email: 'adameve@garden@example.com',
-        phone: '08123456789',
-        photo: null,
-        gender: 'male',
-      };
-      setUserData(data);
-      return {
-        status: 'success' as const,
-        message: 'Logged in successfully',
-        data,
-      };
+    async mutationFn(data: LoginRequestDataType) {
+      return AuthService.login({ data });
     },
     onSuccess(response) {
       options.onSuccess(response);
@@ -74,19 +38,13 @@ export function useLoginMutation(options: MutationOptionsType<AuthDataType>) {
 
 // logout
 export function useLogoutMutation(options: MutationOptionsType) {
-  const { value: userData } = useLocalStorage<AuthDataType>(USER_DATA_KEY, {
-    type: 'object',
-  });
-
   const queryClient = useQueryClient();
+
+  const { token } = useUserContext();
+
   const mutation = useMutation({
     async mutationFn() {
-      if (!userData) throw new AppError(401);
-
-      return {
-        status: 'success' as const,
-        message: 'Logged out successfully.',
-      };
+      return AuthService.logout({ token });
     },
     onSuccess(response) {
       queryClient.invalidateQueries({ queryKey: [tags.Auth] });

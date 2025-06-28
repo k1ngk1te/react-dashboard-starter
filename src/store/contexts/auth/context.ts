@@ -9,10 +9,10 @@ export const useAuthContext = () => {
 };
 
 export const useUserContext = () => {
-  const { data, ...context } = useAuthContext();
-  if (!data) throw new AppError(401);
+  const { data, token, ...context } = useAuthContext();
+  if (!data || !token) throw new AppError(401);
 
-  return { ...context, user: data, data };
+  return { ...context, user: data, data, token };
 };
 
 export const AuthContext = React.createContext<AuthContextType | null>(null);
