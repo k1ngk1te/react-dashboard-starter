@@ -6,7 +6,7 @@ import { NewSuccessDataResponse } from './response';
 
 export async function saveCredentials(
   csrfToken: string,
-  credentials: LoginResponseType['data']
+  credentials: ServerLoginResponseType['data']
 ): Promise<LoginResponseType> {
   const response = await HttpInstance.csrf(csrfToken).post<ServerLoginResponseType>('/api/auth/login/', {
     credentials,
@@ -19,7 +19,7 @@ export async function saveCredentials(
     typeof response.headers.get === 'function' ? response.headers.get(CSRF_TOKEN)?.toString() : undefined;
   if (!newCsrfToken) throw new AppError(400, 'CSRF TOKEN was not provided');
 
-  const result = { ...credentials, csrfToken: newCsrfToken };
+  const result: LoginResponseType['data'] = { ...credentials, csrfToken: newCsrfToken };
 
   return NewSuccessDataResponse(result, responseData.message);
 }

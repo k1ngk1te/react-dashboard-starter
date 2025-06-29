@@ -192,7 +192,7 @@ baseRouter.get('/api/auth/user/', (req, res) => {
         res.status(200).json({
           status: 'success',
           message: 'Authentication credentials verified',
-          data,
+          data: { ...data, csrfToken },
         });
       }
     } else {

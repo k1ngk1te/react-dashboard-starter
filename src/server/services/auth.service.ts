@@ -33,7 +33,7 @@ export async function login({
   csrfToken: string;
   data: LoginRequestDataType;
 }): Promise<LoginResponseType> {
-  const credentials = AuthSerializer.serializeLogin(csrfToken, {
+  const credentials = AuthSerializer.serializeLogin({
     token: 'token',
     data: {
       ...data,
