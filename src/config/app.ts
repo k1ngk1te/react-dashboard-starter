@@ -12,4 +12,6 @@ export const TEST_MODE = import.meta.env.VITE_TEST_MODE
   ? !isNaN(+import.meta.env.VITE_TEST_MODE) && +import.meta.env.VITE_TEST_MODE === 1
   : false;
 
+// Keys
+export const CSRF_TOKEN = import.meta.env.CSRF_TOKEN || 'X-CSRF-TOKEN';
 export const USER_DATA_KEY = 'user_data';

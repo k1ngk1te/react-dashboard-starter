@@ -31,7 +31,7 @@ export default function Login() {
       form={form}
       name="login-form"
       onFinish={(values) => (onSubmit ? onSubmit(values) : undefined)}
-      className="space-y-3 max-w-md mx-auto pt-20"
+      className="space-y-3 p-4 max-w-md mx-auto pt-20"
       disabled={loading}
     >
       <h1>Login</h1>

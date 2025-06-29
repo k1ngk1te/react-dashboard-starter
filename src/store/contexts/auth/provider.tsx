@@ -1,27 +1,36 @@
 import React from 'react';
 
-import { AuthContext } from './context';
-import type { AuthDataType } from '../../../types';
+import {
+  AuthContext,
+  type AuthType,
+  type ReducerActionType,
+  type LoginPayloadType,
+  type LogoutPayloadType,
+} from './context';
 
-export type AuthContextType = AuthType & {
-  login: (data: LoginPayloadType) => void;
-  logout: () => void;
-};
-
-type AuthType = { data: AuthDataType | null; token: string | null; auth: boolean; loading: boolean };
-type LoginPayloadType = { user: AuthDataType; token: string };
-
-function reducer(state: AuthType, action: { type: 'logout' } | { type: 'login'; payload: LoginPayloadType }) {
+function reducer(state: AuthType, action: ReducerActionType) {
   switch (action.type) {
     case 'login':
       return {
         auth: true,
         loading: false,
+        csrfToken: action.payload.csrfToken,
         data: action.payload.user,
         token: action.payload.token,
       };
     case 'logout':
-      return { auth: false, loading: false, data: state.data, token: null };
+      return {
+        auth: false,
+        loading: false,
+        data: state.data,
+        csrfToken: action.payload?.csrfToken || state.csrfToken,
+        token: null,
+      };
+    case 'change-csrf':
+      return {
+        ...state,
+        csrfToken: action.payload,
+      };
     default:
       return state;
   }
@@ -29,6 +38,7 @@ function reducer(state: AuthType, action: { type: 'logout' } | { type: 'login'; 
 
 const initialState = {
   auth: false,
+  csrfToken: null,
   data: null,
   loading: true,
   token: null,
@@ -39,36 +49,37 @@ const AuthProvider: React.FC<{
 }> = ({ children }) => {
   const [state, dispatch] = React.useReducer(reducer, initialState);
 
-  const login = React.useCallback(
-    (userData: LoginPayloadType) => {
+  const changeCSRFToken = React.useCallback(
+    (token: string) => {
       dispatch({
-        type: 'login',
-        payload: userData,
+        type: 'change-csrf',
+        payload: token,
       });
     },
     [dispatch]
   );
 
-  const logout = React.useCallback(() => {
-    dispatch({
-      type: 'logout',
-    });
-  }, [dispatch]);
-
-  return (
-    <AuthContext.Provider
-      value={{
-        auth: state.auth,
-        data: state.data,
-        loading: state.loading,
-        login,
-        logout,
-        token: state.token,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const login = React.useCallback(
+    (payload: LoginPayloadType) => {
+      dispatch({
+        type: 'login',
+        payload,
+      });
+    },
+    [dispatch]
   );
+
+  const logout = React.useCallback(
+    (payload: LogoutPayloadType) => {
+      dispatch({
+        type: 'logout',
+        payload,
+      });
+    },
+    [dispatch]
+  );
+
+  return <AuthContext.Provider value={{ ...state, changeCSRFToken, login, logout }}>{children}</AuthContext.Provider>;
 };
 
 export default AuthProvider;

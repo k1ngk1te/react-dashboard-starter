@@ -1,15 +1,15 @@
 import { Button } from '~/components/controls';
-import { useAlertContext, useUserContext } from '~/store/contexts';
+import { useAlertContext, useAuthContext } from '~/store/contexts';
 import { useLogoutMutation } from '~/store/queries/auth';
 
 export default function Index() {
   const alert = useAlertContext();
-  const { logout } = useUserContext();
+  const { logout } = useAuthContext();
 
   const { mutate: signOut, isPending: loading } = useLogoutMutation({
     onSuccess(response) {
       alert.success(response.message);
-      logout();
+      logout(response.data);
     },
   });
   return (

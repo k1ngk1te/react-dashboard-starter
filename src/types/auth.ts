@@ -17,6 +17,14 @@ export type LoginRequestDataType = {
   password: string;
 };
 export type LoginResponseType = ResponseType<{
+  csrfToken: string;
+  token: string;
+  user: AuthDataType;
+}>;
+export type LogoutResponseType = ResponseType<{
+  csrfToken?: string;
+}>;
+export type ServerLoginResponseType = ResponseType<{
   token: string;
   user: AuthDataType;
 }>;

@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+import { CSRF_TOKEN } from '~/config/app';
+
 const axiosInstance = axios.create();
 axiosInstance.defaults.headers.common.Accept = 'application/json';
 axiosInstance.defaults.headers.common['Content-Type'] = 'application/json';
@@ -11,8 +13,14 @@ export default class HttpInstance {
     return this.httpInstance;
   }
 
-  static login(token: string) {
+  static csrf(csrfToken: string) {
+    this.httpInstance.defaults.headers.common[CSRF_TOKEN] = csrfToken;
+    return this.httpInstance;
+  }
+
+  static login(token: string, csrfToken: string) {
     this.httpInstance.defaults.headers.common.Authorization = 'Bearer ' + token;
+    this.httpInstance.defaults.headers.common[CSRF_TOKEN] = csrfToken;
     return this.httpInstance;
   }
 
@@ -22,10 +30,19 @@ export default class HttpInstance {
   }
 }
 
-export function httpAuth(token: string) {
+export function httpJson(csrfToken: string) {
+  const axiosInstance = axios.create();
+  axiosInstance.defaults.headers.common.Accept = 'application/json';
+  axiosInstance.defaults.headers.common['Content-Type'] = 'application/json';
+  axiosInstance.defaults.headers.common[CSRF_TOKEN] = csrfToken;
+  return axiosInstance;
+}
+
+export function httpAuth(token: string, csrfToken: string) {
   const axiosInstance = axios.create();
   axiosInstance.defaults.headers.common.Accept = 'application/json';
   axiosInstance.defaults.headers.common.Authorization = 'Bearer ' + token;
   axiosInstance.defaults.headers.common['Content-Type'] = 'application/json';
+  axiosInstance.defaults.headers.common[CSRF_TOKEN] = csrfToken;
   return axiosInstance;
 }
