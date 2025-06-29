@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 dotenv.config();
 
 const AUTH_KEY = process.env.AUTH_KEY || 'nrGgtPY';
-const CSRF_TOKEN = process.env.CSRF_TOKEN || 'X-CSRF-TOKEN';
+const CSRF_TOKEN = process.env.CSRF_TOKEN || 'X-Csrf-Token';
 const CSRF_TOKEN_EXPIRES =
   process.env.CSRF_TOKEN_EXPIRES && !isNaN(+process.env.CSRF_TOKEN_EXPIRES)
     ? +process.env.CSRF_TOKEN_EXPIRES
