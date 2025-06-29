@@ -257,14 +257,14 @@ ul {
 }
 
 .notification-alert-msg-container {
-  @apply bg-gray-500 flex items-start gap-2 min-w-96 px-8 py-4 rounded-lg text-sm text-white;
+  @apply bg-gray-500 flex items-start gap-2 min-w-96 max-w-md px-8 py-4 rounded-lg text-sm text-white;
 }
 .notification-alert-msg-container.danger,
 .notification-alert-msg-container.error {
-  background-color: var(--danger-color);
+  @apply bg-red-600;
 }
 .notification-alert-msg-container.success {
-  background-color: var(--primary-color);
+  @apply bg-emerald-500;
 }
 
 /* Notification Styling Stop */
