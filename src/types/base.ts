@@ -1,3 +1,5 @@
+import type { FormRule as AntdFormRule } from 'antd';
+
 export type ResponseType<DataType = undefined> = DataType extends void
   ? {
       message: string;
@@ -51,5 +53,7 @@ export type ModalBaseRefType = {
   open: () => void;
   close: () => void;
 };
+
+export type FormRule = AntdFormRule;
 
 export type ReactPaginationState = React.Dispatch<React.SetStateAction<PaginationState>>;

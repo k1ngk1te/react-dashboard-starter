@@ -1,6 +1,6 @@
-export const APP_NAME = 'QuickFill';
+export const APP_NAME = 'Kite React Dashboard Starter';
 
-export const COMPANY_NAME = 'Quick Fill';
+export const COMPANY_NAME = 'KITE';
 
 export const DEFAULT_PAGINATION_SIZE = 100;
 

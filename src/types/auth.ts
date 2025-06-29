@@ -15,7 +15,6 @@ export type AuthDataType = {
 export type LoginRequestDataType = {
   email: string;
   password: string;
-  sendToWhatsapp?: boolean;
 };
 export type LoginResponseType = ResponseType<{
   token: string;
