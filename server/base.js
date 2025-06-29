@@ -14,7 +14,7 @@ const CSRF_TOKEN_EXPIRES =
     : undefined;
 const SECRET_KEY = process.env.SECRET_KEY || 'mrhqpzfUCPLie3537e7ebb5f58e';
 const JWT_EXPIRES = process.env.JWT_EXPIRES && !isNaN(+process.env.JWT_EXPIRES) ? +process.env.JWT_EXPIRES : 14400;
-const PREVENT_CACHE_ON_GET_AUTH_USER = +process.env.PREVENT_CACHE_ON_GET_AUTH_USER === 1;
+const PREVENT_CACHE_ON_GET_AUTH_USER = +process.env.PREVENT_CACHE_ON_GET_AUTH_USER === 0 ? false : true;
 const TEST_MODE = +process.env.TEST_MODE === 1;
 
 const baseRouter = express.Router();
