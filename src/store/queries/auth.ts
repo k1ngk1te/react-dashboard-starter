@@ -15,6 +15,7 @@ export function useGetAuthQuery({ initialData }: { initialData?: LoginResponseTy
       return AuthService.getAuth();
     },
     initialData,
+    retry: false,
   });
 
   return query;
