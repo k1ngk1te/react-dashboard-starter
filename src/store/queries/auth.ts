@@ -52,7 +52,6 @@ export function useLogoutMutation(options: MutationOptionsType<LogoutResponseTyp
       return AuthService.logout({ csrfToken, token });
     },
     onSuccess(response) {
-      queryClient.invalidateQueries({ queryKey: [tags.Auth] });
       queryClient.clear();
       options.onSuccess(response);
     },
