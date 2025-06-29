@@ -4,7 +4,7 @@ import * as AuthService from '~/server/services/auth.service';
 import type { LoginRequestDataType, LoginResponseType, LogoutResponseType, MutationOptionsType } from '~/types';
 import { AppError } from '~/utils/errors';
 
-import { useAuthContext } from '../contexts';
+import { useAuthContext, useUserContext } from '../contexts';
 import tags from '../tags';
 
 // ****** Queries ******
@@ -45,11 +45,10 @@ export function useLoginMutation(options: MutationOptionsType<LoginResponseType[
 export function useLogoutMutation(options: MutationOptionsType<LogoutResponseType['data']>) {
   const queryClient = useQueryClient();
 
-  const { csrfToken, token } = useAuthContext();
+  const { csrfToken, token } = useUserContext();
 
   const mutation = useMutation({
     async mutationFn() {
-      if (!csrfToken || !token) throw new AppError(500, 'CSRF token or Authentication credentials are required');
       return AuthService.logout({ csrfToken, token });
     },
     onSuccess(response) {
