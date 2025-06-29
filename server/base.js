@@ -25,10 +25,12 @@ function generateCsrfToken() {
 }
 
 // Function to generate a CSRF token and place in the response headers
-function generateCsrfTokenInResponse(res) {
+// if auth token is passed in then set the auth header
+function generateCsrfTokenInResponse(res, token) {
   const csrfToken = generateCsrfToken();
   res.setHeader(CSRF_TOKEN, csrfToken);
-  res.setHeader('Set-Cookie', [
+
+  const cookies = [
     cookie.serialize(CSRF_TOKEN, csrfToken, {
       expires: CSRF_TOKEN_EXPIRES ? new Date(Date.now() + CSRF_TOKEN_EXPIRES * 1000) : undefined,
       httpOnly: true,
@@ -36,7 +38,30 @@ function generateCsrfTokenInResponse(res) {
       sameSite: 'strict',
       secure: process.env.NODE_ENV !== 'development',
     }),
-  ]);
+  ];
+  if (token) {
+    cookies.push(
+      cookie.serialize(AUTH_KEY, token, {
+        expires: new Date(Date.now() + JWT_EXPIRES * 1000),
+        httpOnly: true,
+        path: '/',
+        sameSite: 'strict',
+        secure: process.env.NODE_ENV !== 'development',
+      })
+    );
+  } else if (token === null) {
+    cookies.push(
+      cookie.serialize(AUTH_KEY, '', {
+        expires: new Date(0),
+        httpOnly: true,
+        path: '/',
+        sameSite: 'strict',
+        secure: process.env.NODE_ENV !== 'development',
+      })
+    );
+  }
+
+  res.setHeader('Set-Cookie', cookies);
 }
 
 // verify CSRF_TOKEN middleware
@@ -81,8 +106,12 @@ function verifyCSRFTokenMiddleware(req, res, next) {
 // API route for health
 baseRouter.get('/api/health/', (req, res) => {
   try {
-    // Add CSRF_TOKEN
-    generateCsrfTokenInResponse(res);
+    const cookies = cookie.parse(req.headers.cookie || '');
+
+    // Add CSRF_TOKEN IF NOT PRESENT
+    const csrfToken = cookies[CSRF_TOKEN];
+    if (!csrfToken) generateCsrfTokenInResponse(res);
+    else res.setHeader(CSRF_TOKEN, csrfToken);
 
     res.status(200).json({
       status: 'success',
@@ -109,18 +138,8 @@ baseRouter.post('/api/auth/login/', verifyCSRFTokenMiddleware, (req, res) => {
       expiresIn: JWT_EXPIRES,
     });
 
-    res.setHeader('Set-Cookie', [
-      cookie.serialize(AUTH_KEY, token, {
-        expires: new Date(Date.now() + JWT_EXPIRES * 1000),
-        httpOnly: true,
-        path: '/',
-        sameSite: 'strict',
-        secure: process.env.NODE_ENV !== 'development',
-      }),
-    ]);
-
     // Add CSRF_TOKEN
-    generateCsrfTokenInResponse(res);
+    generateCsrfTokenInResponse(res, token);
 
     res.status(200).json({
       status: 'success',
@@ -137,15 +156,8 @@ baseRouter.post('/api/auth/login/', verifyCSRFTokenMiddleware, (req, res) => {
 // API route for removing the token
 baseRouter.post('/api/auth/logout/', verifyCSRFTokenMiddleware, (_, res) => {
   try {
-    res.setHeader('Set-Cookie', [
-      cookie.serialize(AUTH_KEY, '', {
-        expires: new Date(0),
-        httpOnly: true,
-        path: '/',
-        sameSite: 'strict',
-        secure: process.env.NODE_ENV !== 'development',
-      }),
-    ]);
+    // Add CSRF_TOKEN
+    generateCsrfTokenInResponse(res, null);
 
     res.status(200).json({ status: 'success', message: 'Token removed successfully' });
   } catch (error) {
@@ -162,8 +174,10 @@ baseRouter.get('/api/auth/user/', (req, res) => {
     const cookies = cookie.parse(req.headers.cookie || '');
     const token = cookies[AUTH_KEY];
 
-    // Add CSRF_TOKEN
-    generateCsrfTokenInResponse(res);
+    // Add CSRF_TOKEN IF NOT PRESENT
+    const csrfToken = cookies[CSRF_TOKEN];
+    if (!csrfToken) generateCsrfTokenInResponse(res);
+    else res.setHeader(CSRF_TOKEN, csrfToken);
 
     if (token) {
       const decoded = jwt.verify(token, SECRET_KEY);
