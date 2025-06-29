@@ -1,11 +1,5 @@
 import { CSRF_TOKEN } from '~/config';
-import type {
-  LoginRequestDataType,
-  LoginResponseType,
-  LogoutResponseType,
-  ResponseType,
-  ServerLoginResponseType,
-} from '~/types';
+import type { LoginRequestDataType, LoginResponseType, LogoutResponseType, ResponseType } from '~/types';
 import { AppError } from '~/utils/errors';
 import HttpInstance from '~/utils/http';
 import * as AuthSerializer from '../serializers/auth.serializer';
@@ -13,12 +7,14 @@ import { saveCredentials } from '../utils/auth';
 import { NewSuccessDataResponse } from '../utils/response';
 
 export async function getAuth(): Promise<LoginResponseType> {
-  const response = await HttpInstance.current().get<ServerLoginResponseType>('/api/auth/user');
+  const response = await HttpInstance.current().get<LoginResponseType>('/api/auth/user');
   const responseData = response.data;
 
   // Get the CSRF_TOKEN FROM THE HEADERS
-  const csrfToken =
-    typeof response.headers.get === 'function' ? response.headers.get(CSRF_TOKEN)?.toString() : undefined;
+  let csrfToken = responseData.data.csrfToken;
+  if (!csrfToken && typeof response.headers.get === 'function' && response.headers.get(CSRF_TOKEN) !== undefined) {
+    csrfToken = response.headers.get(CSRF_TOKEN)?.toString() || '';
+  }
   if (!csrfToken) throw new AppError(400, 'CSRF TOKEN was not provided');
 
   const result = { ...responseData.data, csrfToken };
