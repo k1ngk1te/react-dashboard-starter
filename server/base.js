@@ -1,4 +1,5 @@
 import cookie from 'cookie';
+import cors from 'cors';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
 import express from 'express';
@@ -9,6 +10,7 @@ import jwt from 'jsonwebtoken';
 
 dotenv.config();
 
+export const ALLOWED_ORIGINS = ['http://localhost:3000'];
 export const API_AUTH_LIMITER_EXPIRES =
   process.env.API_AUTH_LIMITER_EXPIRES && !isNaN(+process.env.API_AUTH_LIMITER_EXPIRES)
     ? +process.env.API_AUTH_LIMITER_EXPIRES
@@ -41,6 +43,29 @@ export const TEST_MODE = +process.env.TEST_MODE === 1;
 // ****** ENVS Stop *********
 
 const baseRouter = express.Router();
+
+// ****** CORS Start ********
+
+// Configure CORS options
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin || ALLOWED_ORIGINS.length === 0) return callback(null, true);
+    // Allow if the origin is in our allowed list
+    if (ALLOWED_ORIGINS.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Specify allowed methods
+  credentials: true, // This is crucial for sending cookies and custom headers
+};
+
+// Apply the CORS middleware with your custom options
+baseRouter.use(cors(corsOptions));
+
+// ****** CORS Stop  ********
 
 // ****** Rate Limiter Start *******
 
