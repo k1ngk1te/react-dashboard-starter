@@ -21,6 +21,7 @@
     "@tanstack/react-table": "^8.21.3",
     "antd": "^5.26.0",
     "axios": "^1.9.0",
+    "cookie": "^1.0.2",
     "cors": "^2.8.5",
     "dayjs": "^1.11.13",
     "dotenv": "^17.0.0",
