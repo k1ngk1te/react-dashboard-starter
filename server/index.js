@@ -7,7 +7,12 @@ import { router } from './base.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+export const TRUST_PROXY = process.env.TRUST_PROXY && !isNaN(+process.env.TRUST_PROXY) ? +process.env.TRUST_PROXY : 0;
+
 const app = express();
+
+// Rate Limiter
+app.set('trust proxy', TRUST_PROXY);
 
 // Middleware
 app.use(express.json());

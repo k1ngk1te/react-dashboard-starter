@@ -2,12 +2,29 @@ import cookie from 'cookie';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
 import express from 'express';
+import { rateLimit } from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 
 // ****** ENVS Start ********
 
 dotenv.config();
 
+export const API_AUTH_LIMITER_EXPIRES =
+  process.env.API_AUTH_LIMITER_EXPIRES && !isNaN(+process.env.API_AUTH_LIMITER_EXPIRES)
+    ? +process.env.API_AUTH_LIMITER_EXPIRES
+    : 3600;
+export const API_AUTH_LIMITER_MAX =
+  process.env.API_AUTH_LIMITER_MAX && !isNaN(+process.env.API_AUTH_LIMITER_MAX)
+    ? +process.env.API_AUTH_LIMITER_MAX
+    : 50;
+export const API_DEFAULT_LIMITER_EXPIRES =
+  process.env.API_DEFAULT_LIMITER_EXPIRES && !isNaN(+process.env.API_DEFAULT_LIMITER_EXPIRES)
+    ? +process.env.API_DEFAULT_LIMITER_EXPIRES
+    : 900;
+export const API_DEFAULT_LIMITER_MAX =
+  process.env.API_DEFAULT_LIMITER_MAX && !isNaN(+process.env.API_DEFAULT_LIMITER_MAX)
+    ? +process.env.API_DEFAULT_LIMITER_MAX
+    : 10;
 export const AUTH_KEY = process.env.AUTH_KEY || 'nrGgtPY';
 export const CSRF_TOKEN = process.env.CSRF_TOKEN || 'X-Csrf-Token';
 export const CSRF_TOKEN_EXPIRES =
@@ -25,17 +42,54 @@ export const TEST_MODE = +process.env.TEST_MODE === 1;
 
 const baseRouter = express.Router();
 
+// ****** Rate Limiter Start *******
+
+function keyGenerator(req, _) {
+  if (!req.ip) {
+    if (TEST_MODE) console.error('Warning: request.ip is missing!');
+    return req.socket.remoteAddress;
+  }
+
+  return req.ip.replace(/:\d+[^:]*$/, '');
+}
+
+// Limiter for sensitive authentication routes
+const authLimiter = rateLimit({
+  windowMs: API_AUTH_LIMITER_EXPIRES * 1000, // 15 minutes
+  limit: API_AUTH_LIMITER_MAX, // Max 10 requests per IP per window
+  message: {
+    status: 'error',
+    message: 'Too many login attempts from this IP, please try again after 15 minutes',
+  },
+  statusCode: 429,
+  keyGenerator,
+});
+
+// Limiter for general API data fetching
+const apiLimiter = rateLimit({
+  windowMs: API_DEFAULT_LIMITER_EXPIRES * 1000, // 1 hour
+  limit: API_DEFAULT_LIMITER_MAX, // Max 100 requests per IP per hour
+  message: {
+    status: 'error',
+    message: 'You have exceeded the API request limit. Please try again later.',
+  },
+  statusCode: 429,
+  keyGenerator,
+});
+
+// ******** Rate Limiter Stop *********
+
 // API route for health
-baseRouter.get('/api/health/', healthController);
+baseRouter.get('/api/health/', apiLimiter, healthController);
 
 // API route for saving the token
-baseRouter.post('/api/auth/login/', verifyCSRFTokenMiddleware, loginController);
+baseRouter.post('/api/auth/login/', apiLimiter, verifyCSRFTokenMiddleware, loginController);
 
 // API route for removing the token
-baseRouter.post('/api/auth/logout/', verifyCSRFTokenMiddleware, logoutController);
+baseRouter.post('/api/auth/logout/', apiLimiter, verifyCSRFTokenMiddleware, logoutController);
 
 // API route for retrieving the token
-baseRouter.get('/api/auth/user/', authUserController);
+baseRouter.get('/api/auth/user/', authLimiter, authUserController);
 
 // ********** Controllers Start ***********
 
@@ -52,6 +106,9 @@ export async function healthController(req, res) {
     res.status(200).json({
       status: 'success',
       message: 'Health is Good',
+      data: {
+        ip: req.ip,
+      },
     });
   } catch (error) {
     res.status(500).json({
