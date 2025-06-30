@@ -13,5 +13,5 @@ export const TEST_MODE = import.meta.env.VITE_TEST_MODE
   : false;
 
 // Keys
-export const CSRF_TOKEN = import.meta.env.CSRF_TOKEN || 'X-CSRF-TOKEN';
+export const CSRF_TOKEN = import.meta.env.VITE_CSRF_TOKEN || 'X-Csrf-Token';
 export const USER_DATA_KEY = 'user_data';
