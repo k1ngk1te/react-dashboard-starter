@@ -4,108 +4,43 @@ import dotenv from 'dotenv';
 import express from 'express';
 import jwt from 'jsonwebtoken';
 
+// ****** ENVS Start ********
+
 dotenv.config();
 
-const AUTH_KEY = process.env.AUTH_KEY || 'nrGgtPY';
-const CSRF_TOKEN = process.env.CSRF_TOKEN || 'X-Csrf-Token';
-const CSRF_TOKEN_EXPIRES =
+export const AUTH_KEY = process.env.AUTH_KEY || 'nrGgtPY';
+export const CSRF_TOKEN = process.env.CSRF_TOKEN || 'X-Csrf-Token';
+export const CSRF_TOKEN_EXPIRES =
   process.env.CSRF_TOKEN_EXPIRES && !isNaN(+process.env.CSRF_TOKEN_EXPIRES)
     ? +process.env.CSRF_TOKEN_EXPIRES
     : undefined;
-const SECRET_KEY = process.env.SECRET_KEY || 'mrhqpzfUCPLie3537e7ebb5f58e';
-const JWT_EXPIRES = process.env.JWT_EXPIRES && !isNaN(+process.env.JWT_EXPIRES) ? +process.env.JWT_EXPIRES : 14400;
-const PREVENT_CACHE_ON_GET_AUTH_USER = +process.env.PREVENT_CACHE_ON_GET_AUTH_USER === 0 ? false : true;
-const TEST_MODE = +process.env.TEST_MODE === 1;
+export const NODE_ENV = process.env.NODE_ENV;
+export const SECRET_KEY = process.env.SECRET_KEY || 'mrhqpzfUCPLie3537e7ebb5f58e';
+export const JWT_EXPIRES =
+  process.env.JWT_EXPIRES && !isNaN(+process.env.JWT_EXPIRES) ? +process.env.JWT_EXPIRES : 14400;
+export const PREVENT_CACHE_ON_GET_AUTH_USER = +process.env.PREVENT_CACHE_ON_GET_AUTH_USER === 0 ? false : true;
+export const TEST_MODE = +process.env.TEST_MODE === 1;
+
+// ****** ENVS Stop *********
 
 const baseRouter = express.Router();
 
-// Function to generate a random token
-function generateCsrfToken() {
-  // Generate 32 random bytes and convert to a hex string
-  return crypto.randomBytes(32).toString('hex');
-}
-
-// Function to generate a CSRF token and place in the response headers
-// if auth token is passed in then set the auth header
-function generateCsrfTokenInResponse(res, token) {
-  const csrfToken = generateCsrfToken();
-  res.setHeader(CSRF_TOKEN, csrfToken);
-
-  const cookies = [
-    cookie.serialize(CSRF_TOKEN, csrfToken, {
-      expires: CSRF_TOKEN_EXPIRES ? new Date(Date.now() + CSRF_TOKEN_EXPIRES * 1000) : undefined,
-      httpOnly: true,
-      path: '/',
-      sameSite: 'strict',
-      secure: process.env.NODE_ENV !== 'development',
-    }),
-  ];
-  if (token) {
-    cookies.push(
-      cookie.serialize(AUTH_KEY, token, {
-        expires: new Date(Date.now() + JWT_EXPIRES * 1000),
-        httpOnly: true,
-        path: '/',
-        sameSite: 'strict',
-        secure: process.env.NODE_ENV !== 'development',
-      })
-    );
-  } else if (token === null) {
-    cookies.push(
-      cookie.serialize(AUTH_KEY, '', {
-        expires: new Date(0),
-        httpOnly: true,
-        path: '/',
-        sameSite: 'strict',
-        secure: process.env.NODE_ENV !== 'development',
-      })
-    );
-  }
-
-  res.setHeader('Set-Cookie', cookies);
-}
-
-// verify CSRF_TOKEN middleware
-function verifyCSRFTokenMiddleware(req, res, next) {
-  const failedMessage = 'Unable to validate CSRF TOKEN. Please refresh this page and try again.';
-  try {
-    // Get the token from the cookies
-    const cookies = cookie.parse(req.headers.cookie || '');
-    const cookieCsrfToken = cookies[CSRF_TOKEN];
-
-    // Get the token from the request headers
-    const headerCsrfToken = req.header(CSRF_TOKEN);
-
-    if (!headerCsrfToken || !cookieCsrfToken) {
-      res.status(403).json({
-        status: 'error',
-        message: failedMessage + ' Token is not present in headers or cookies.',
-      });
-      return;
-    }
-
-    // Check they are both the same
-    if (headerCsrfToken !== cookieCsrfToken) {
-      res.status(403).json({
-        status: 'error',
-        message: failedMessage + 'CSRF Token is not valid.',
-      });
-      return;
-    }
-
-    // continue
-    next();
-  } catch (error) {
-    res.status(500).json({
-      status: 'error',
-      message:
-        TEST_MODE && error.message ? error.message : failedMessage + ' Something went wrong on the client server.',
-    });
-  }
-}
-
 // API route for health
-baseRouter.get('/api/health/', (req, res) => {
+baseRouter.get('/api/health/', healthController);
+
+// API route for saving the token
+baseRouter.post('/api/auth/login/', verifyCSRFTokenMiddleware, loginController);
+
+// API route for removing the token
+baseRouter.post('/api/auth/logout/', verifyCSRFTokenMiddleware, logoutController);
+
+// API route for retrieving the token
+baseRouter.get('/api/auth/user/', authUserController);
+
+// ********** Controllers Start ***********
+
+// // Controller to check if the backend server is live
+export async function healthController(req, res) {
   try {
     const cookies = cookie.parse(req.headers.cookie || '');
 
@@ -124,10 +59,10 @@ baseRouter.get('/api/health/', (req, res) => {
       message: TEST_MODE && error.message ? error.message : 'Something went wrong on the client server.',
     });
   }
-});
+}
 
-// API route for saving the token
-baseRouter.post('/api/auth/login/', verifyCSRFTokenMiddleware, (req, res) => {
+// // Login Controller
+export async function loginController(req, res) {
   try {
     const { credentials } = req.body;
 
@@ -152,10 +87,10 @@ baseRouter.post('/api/auth/login/', verifyCSRFTokenMiddleware, (req, res) => {
       message: TEST_MODE && error.message ? error.message : 'Something went wrong on the client server.',
     });
   }
-});
+}
 
-// API route for removing the token
-baseRouter.post('/api/auth/logout/', verifyCSRFTokenMiddleware, (_, res) => {
+// // Logout Controller
+export async function logoutController(_, res) {
   try {
     // Add CSRF_TOKEN
     generateCsrfTokenInResponse(res, null);
@@ -167,10 +102,10 @@ baseRouter.post('/api/auth/logout/', verifyCSRFTokenMiddleware, (_, res) => {
       message: error.message || 'Something went wrong on the client server.',
     });
   }
-});
+}
 
-// API route for retrieving the token
-baseRouter.get('/api/auth/user/', (req, res) => {
+// // Auth User Controller
+export async function authUserController(req, res) {
   try {
     if (PREVENT_CACHE_ON_GET_AUTH_USER) {
       // Prevent netlify from caching this endpoint
@@ -215,6 +150,102 @@ baseRouter.get('/api/auth/user/', (req, res) => {
       message: error.message || 'Something went wrong on the client server.',
     });
   }
-});
+}
 
+// ********** Controllers Stop ************
+
+// ********** Middlewares Start ************
+
+// // verify CSRF_TOKEN middleware
+export function verifyCSRFTokenMiddleware(req, res, next) {
+  const failedMessage = 'Unable to validate CSRF TOKEN. Please refresh this page and try again.';
+  try {
+    // Get the token from the cookies
+    const cookies = cookie.parse(req.headers.cookie || '');
+    const cookieCsrfToken = cookies[CSRF_TOKEN];
+
+    // Get the token from the request headers
+    const headerCsrfToken = req.header(CSRF_TOKEN);
+
+    if (!headerCsrfToken || !cookieCsrfToken) {
+      res.status(403).json({
+        status: 'error',
+        message: failedMessage + ' Token is not present in headers or cookies.',
+      });
+      return;
+    }
+
+    // Check they are both the same
+    if (headerCsrfToken !== cookieCsrfToken) {
+      res.status(403).json({
+        status: 'error',
+        message: failedMessage + 'CSRF Token is not valid.',
+      });
+      return;
+    }
+
+    // continue
+    next();
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message:
+        TEST_MODE && error.message ? error.message : failedMessage + ' Something went wrong on the client server.',
+    });
+  }
+}
+
+// ********** Middlewares Stop *************
+
+// ********** Utils Start ************
+
+// Function to generate a random token
+export function generateCsrfToken() {
+  // Generate 32 random bytes and convert to a hex string
+  return crypto.randomBytes(32).toString('hex');
+}
+
+// Function to generate a CSRF token and place in the response headers
+// if auth token is passed in then set the auth header
+export function generateCsrfTokenInResponse(res, token) {
+  const csrfToken = generateCsrfToken();
+  res.setHeader(CSRF_TOKEN, csrfToken);
+
+  const cookies = [
+    cookie.serialize(CSRF_TOKEN, csrfToken, {
+      expires: CSRF_TOKEN_EXPIRES ? new Date(Date.now() + CSRF_TOKEN_EXPIRES * 1000) : undefined,
+      httpOnly: true,
+      path: '/',
+      sameSite: 'strict',
+      secure: NODE_ENV !== 'development',
+    }),
+  ];
+  if (token) {
+    cookies.push(
+      cookie.serialize(AUTH_KEY, token, {
+        expires: new Date(Date.now() + JWT_EXPIRES * 1000),
+        httpOnly: true,
+        path: '/',
+        sameSite: 'strict',
+        secure: NODE_ENV !== 'development',
+      })
+    );
+  } else if (token === null) {
+    cookies.push(
+      cookie.serialize(AUTH_KEY, '', {
+        expires: new Date(0),
+        httpOnly: true,
+        path: '/',
+        sameSite: 'strict',
+        secure: NODE_ENV !== 'development',
+      })
+    );
+  }
+
+  res.setHeader('Set-Cookie', cookies);
+}
+
+// ********** Utils Stop *************
+
+// // Export Final
 export const router = baseRouter;
