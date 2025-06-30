@@ -163,7 +163,10 @@ export async function healthController(req, res) {
 // // Login Controller
 export async function loginController(req, res) {
   try {
-    const { credentials } = await loginRequestSchema.validate({ ...req.body });
+    const { credentials } = await loginRequestSchema.validate(
+      { ...req.body },
+      { abortEarly: true, stripUnknown: true }
+    );
 
     const token = jwt.sign(credentials, SECRET_KEY, {
       expiresIn: JWT_EXPIRES,
