@@ -106,9 +106,7 @@ export async function healthController(req, res) {
     res.status(200).json({
       status: 'success',
       message: 'Health is Good',
-      data: {
-        ip: req.ip,
-      },
+      data: { ip: TEST_MODE ? req.ip : undefined },
     });
   } catch (error) {
     res.status(500).json({
