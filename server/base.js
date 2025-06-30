@@ -10,7 +10,7 @@ import jwt from 'jsonwebtoken';
 
 dotenv.config();
 
-export const ALLOWED_ORIGINS = ['http://localhost:3000'];
+export const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',');
 export const API_AUTH_LIMITER_EXPIRES =
   process.env.API_AUTH_LIMITER_EXPIRES && !isNaN(+process.env.API_AUTH_LIMITER_EXPIRES)
     ? +process.env.API_AUTH_LIMITER_EXPIRES
