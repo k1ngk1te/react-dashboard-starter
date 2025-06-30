@@ -4,7 +4,9 @@ import crypto from 'crypto';
 import dotenv from 'dotenv';
 import express from 'express';
 import { rateLimit } from 'express-rate-limit';
+import helmet from 'helmet';
 import jwt from 'jsonwebtoken';
+import * as yup from 'yup';
 
 // ****** ENVS Start ********
 
@@ -43,6 +45,9 @@ export const TEST_MODE = +process.env.TEST_MODE === 1;
 // ****** ENVS Stop *********
 
 const baseRouter = express.Router();
+
+// Apply Helmet middleware first for maximum protection
+baseRouter.use(helmet());
 
 // ****** CORS Start ********
 
@@ -116,6 +121,20 @@ baseRouter.post('/api/auth/logout/', apiLimiter, verifyCSRFTokenMiddleware, logo
 // API route for retrieving the token
 baseRouter.get('/api/auth/user/', authLimiter, authUserController);
 
+// ********** Validators Start ************
+
+// Schema for the login credentials coming from your React frontend
+export const loginRequestSchema = yup.object({
+  credentials: yup
+    .object({
+      token: yup.string().required('Token is required'),
+      user: yup.object().required('User object is required.'),
+    })
+    .required('Credentials are required.'),
+});
+
+// ********** Validators Stop *************
+
 // ********** Controllers Start ***********
 
 // // Controller to check if the backend server is live
@@ -144,11 +163,7 @@ export async function healthController(req, res) {
 // // Login Controller
 export async function loginController(req, res) {
   try {
-    const { credentials } = req.body;
-
-    if (!credentials) {
-      throw new Error('Credentials are required.');
-    }
+    const { credentials } = await loginRequestSchema.validate({ ...req.body });
 
     const token = jwt.sign(credentials, SECRET_KEY, {
       expiresIn: JWT_EXPIRES,
