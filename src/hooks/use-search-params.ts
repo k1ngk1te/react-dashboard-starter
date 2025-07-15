@@ -3,6 +3,7 @@ import { useSearchParams as useNextSearchParams } from 'react-router-dom';
 
 type UseSearchParamsType = {
   get: (key: string) => string | null;
+  retrieve: (key: string) => string | null;
   set: (key: string, value: string, options?: NavigationOptionsType) => void;
   update: (params: Record<string, string | number>, options?: NavigationOptionsType) => void;
   remove: (key: string, options?: NavigationOptionsType) => void;
@@ -26,6 +27,14 @@ export default function useSearchParams(options?: {
       return key;
     },
     [options?.prefix]
+  );
+
+  const retrieveParam = React.useCallback(
+    (key: string) => {
+      const itemKey = getKey(key);
+      return searchParams.get(itemKey);
+    },
+    [getKey, searchParams]
   );
 
   const getCurrentParams = React.useCallback((currentParams: Iterable<[string, string]>) => {
@@ -97,12 +106,13 @@ export default function useSearchParams(options?: {
   const result = React.useMemo(() => {
     return {
       get: (item: string) => searchParams.get(item),
+      retrieve: retrieveParam,
       set: setParams,
       update: setMultipleParams,
       remove: removeParam,
       delete: removeParams,
     };
-  }, [searchParams, setMultipleParams, setParams, removeParam, removeParams]);
+  }, [searchParams, setMultipleParams, setParams, retrieveParam, removeParam, removeParams]);
 
   return result;
 }
