@@ -1,3 +1,4 @@
+import type { Dayjs } from 'dayjs';
 import React from 'react';
 
 import { DEFAULT_PAGINATION_SIZE } from '../../config/app';
@@ -5,7 +6,41 @@ import type { ReactPaginationState } from '../../types';
 import { dates, getDate } from '../../utils';
 
 import useDebouncedSearchParamInput from './use-debounced-search-param-input';
-import useSearchParams from '../use-search-params';
+import useSearchParams, { type UseSearchParamsType } from '../use-search-params';
+
+export type UsePageFiltersType = {
+  pagination: {
+    pageIndex: number;
+    pageSize: number;
+  };
+  from: Dayjs | undefined;
+  to: Dayjs | undefined;
+  status: string | null;
+  keys: {
+    status: string;
+    page: string;
+    limit: string;
+    from: string;
+    to: string;
+    search: string;
+  };
+  search: string | undefined;
+  searchInput: {
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    value: string | undefined;
+  };
+  searchParams: UseSearchParamsType;
+  filters: {
+    limit: number;
+    page: number;
+    search: string | undefined;
+    from: string | undefined;
+    to: string | undefined;
+    status: string | null;
+  };
+  changeFilters: (name: string, value: string | Date | Record<string, Date> | null) => void;
+  changePagination: ReactPaginationState;
+};
 
 export default function usePageFilters(options?: {
   prefix?: string;

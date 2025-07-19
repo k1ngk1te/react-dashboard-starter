@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSearchParams as useNextSearchParams } from 'react-router-dom';
 
-type UseSearchParamsType = {
+export type UseSearchParamsType = {
   get: (key: string) => string | null;
   retrieve: (key: string) => string | null;
   set: (key: string, value: string, options?: NavigationOptionsType) => void;
