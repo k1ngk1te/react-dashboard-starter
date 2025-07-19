@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
  * Hook to implement infinite scrolling using IntersectionObserver.
  *
  * @param {Object} params - Configuration object
- * @param {React.RefObject<HTMLElement>} params.targetRef - The ref of the element to observe
+ * @param {React.RefObject<HTMLElement | null>} params.targetRef - The ref of the element to observe
  * @param {boolean} params.hasNextPage - Whether there are more pages to fetch
  * @param {boolean} params.isFetchingNextPage - Whether a fetch is currently in progress
  * @param {() => void} params.fetchNextPage - Function to fetch the next page
@@ -17,7 +17,7 @@ export default function useInfiniteScroll({
   fetchNextPage,
   threshold = 0.1,
 }: {
-  targetRef: React.RefObject<HTMLElement>;
+  targetRef: React.RefObject<HTMLElement | null>;
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   fetchNextPage: () => void;
