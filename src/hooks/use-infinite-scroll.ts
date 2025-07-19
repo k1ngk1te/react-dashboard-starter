@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 /**
  * useInfiniteScroll - A custom hook to implement infinite scrolling using IntersectionObserver.
@@ -10,6 +10,17 @@ import { useEffect, useRef } from 'react';
  * It safely disconnects and recreates the observer on relevant dependency changes,
  * ensuring that the observer stays in sync with the latest `fetchNextPage` logic
  * and control flags (`hasNextPage`, `isFetchingNextPage`).
+ *
+ * ⚠️ WARNING:
+ * This hook **does not work reliably** with elements rendered using `ReactDOM.createPortal`,
+ * especially if the portalled element is:
+ *   - outside the scrollable root,
+ *   - inside a `position: fixed` container,
+ *   - or not part of the visible scroll hierarchy.
+ *
+ * If you need infinite scroll inside a portalled context (like modals or drawers),
+ * consider using scroll/resize event listeners or ensure the portal is mounted within
+ * the same scroll container.
  *
  * @param {Object} params
  * @param {React.RefObject<HTMLElement | null>} params.targetRef - Ref of the DOM element to observe
@@ -31,37 +42,28 @@ export default function useInfiniteScroll({
   fetchNextPage: () => void;
   threshold?: number;
 }) {
-  // Store a reference to the IntersectionObserver instance
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
-    // Disconnect the existing observer before creating a new one
     if (observerRef.current) {
       observerRef.current.disconnect();
     }
 
-    // Create a new IntersectionObserver
     observerRef.current = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
-
-        // If the observed element is visible, and we can fetch, trigger next page load
         if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
-          console.log('Fetch next page', isFetchingNextPage);
           fetchNextPage();
         }
       },
-      { threshold } // Trigger when `threshold` portion of the target is visible
+      { threshold }
     );
 
     const el = targetRef.current;
-
-    // Start observing the element if it exists
     if (el) {
       observerRef.current.observe(el);
     }
 
-    // Cleanup: disconnect observer when component unmounts or dependencies change
     return () => {
       observerRef.current?.disconnect();
     };
