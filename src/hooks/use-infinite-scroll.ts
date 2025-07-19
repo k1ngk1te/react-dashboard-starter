@@ -1,14 +1,22 @@
 import { useEffect, useRef } from 'react';
 
 /**
- * Hook to implement infinite scrolling using IntersectionObserver.
+ * useInfiniteScroll - A custom hook to implement infinite scrolling using IntersectionObserver.
  *
- * @param {Object} params - Configuration object
- * @param {React.RefObject<HTMLElement | null>} params.targetRef - The ref of the element to observe
- * @param {boolean} params.hasNextPage - Whether there are more pages to fetch
- * @param {boolean} params.isFetchingNextPage - Whether a fetch is currently in progress
- * @param {() => void} params.fetchNextPage - Function to fetch the next page
- * @param {number} [params.threshold=0.1] - How much of the target is visible before triggering (0 to 1)
+ * This hook observes a target DOM element and triggers the provided `fetchNextPage` callback
+ * when the element becomes visible in the viewport. It's commonly used for "load more"
+ * pagination or infinite scroll behavior in UIs.
+ *
+ * It safely disconnects and recreates the observer on relevant dependency changes,
+ * ensuring that the observer stays in sync with the latest `fetchNextPage` logic
+ * and control flags (`hasNextPage`, `isFetchingNextPage`).
+ *
+ * @param {Object} params
+ * @param {React.RefObject<HTMLElement | null>} params.targetRef - Ref of the DOM element to observe
+ * @param {boolean} params.hasNextPage - Whether there are more pages to load
+ * @param {boolean} params.isFetchingNextPage - Whether a page fetch is currently in progress
+ * @param {() => void} params.fetchNextPage - Callback to fetch the next page of data
+ * @param {number} [params.threshold=0.1] - Intersection threshold (how much of element must be visible)
  */
 export default function useInfiniteScroll({
   targetRef,
@@ -23,48 +31,39 @@ export default function useInfiniteScroll({
   fetchNextPage: () => void;
   threshold?: number;
 }) {
-  // Ref to store the observer instance so it can be reused/cleaned up
+  // Store a reference to the IntersectionObserver instance
   const observerRef = useRef<IntersectionObserver | null>(null);
 
-  // Store the latest values of `hasNextPage` and `isFetchingNextPage`
-  // This avoids issues with stale closures inside the observer callback
-  const hasNextPageRef = useRef(hasNextPage);
-  const isFetchingNextPageRef = useRef(isFetchingNextPage);
-
-  // Keep refs up to date when the state changes
   useEffect(() => {
-    hasNextPageRef.current = hasNextPage;
-    isFetchingNextPageRef.current = isFetchingNextPage;
-  }, [hasNextPage, isFetchingNextPage]);
-
-  useEffect(() => {
-    // Disconnect any previous observer
+    // Disconnect the existing observer before creating a new one
     if (observerRef.current) {
       observerRef.current.disconnect();
     }
 
-    // Create a new observer
+    // Create a new IntersectionObserver
     observerRef.current = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
 
-        if (entry.isIntersecting && hasNextPageRef.current && !isFetchingNextPageRef.current) {
-          // Call the fetch function only if more pages exist and nothing is currently fetching
+        // If the observed element is visible, and we can fetch, trigger next page load
+        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          console.log('Fetch next page', isFetchingNextPage);
           fetchNextPage();
         }
       },
-      { threshold }
+      { threshold } // Trigger when `threshold` portion of the target is visible
     );
 
-    // Start observing the target element
     const el = targetRef.current;
+
+    // Start observing the element if it exists
     if (el) {
       observerRef.current.observe(el);
     }
 
-    // Clean up the observer on unmount or dependency change
+    // Cleanup: disconnect observer when component unmounts or dependencies change
     return () => {
       observerRef.current?.disconnect();
     };
-  }, [fetchNextPage, targetRef, threshold]);
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, targetRef, threshold]);
 }
