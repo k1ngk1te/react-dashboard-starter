@@ -1,35 +1,56 @@
 import React from 'react';
 
-type IntervalOptions = {
-  status?: 'play' | 'pause';
+type IntervalStatus = 'play' | 'pause';
+
+export type IntervalOptions = {
+  status?: IntervalStatus;
 };
 
+/**
+ * Custom hook to run a callback function at specified intervals, with support for pause/resume.
+ *
+ * @param callback - The function to be executed at each interval tick.
+ * @param delay - The time delay between executions in milliseconds. Default is 1000ms.
+ * @param options - Optional configuration object to set initial status (`play` or `pause`).
+ *
+ * @returns An object containing:
+ * - `removeInterval`: Function to manually clear the interval.
+ * - `status`: Current interval status (`play` or `pause`).
+ * - `toggleInterval`: Function to switch between play and pause states.
+ *
+ * @example
+ * const { toggleInterval, removeInterval, status } = useInterval(() => {
+ *   console.log('Tick');
+ * }, 1000, { status: 'pause' });
+ *
+ * toggleInterval('play'); // Start interval
+ * toggleInterval('pause'); // Pause it
+ */
 function useInterval(callback: () => void, delay: number = 1000, options?: IntervalOptions) {
-  const savedCallback = React.useRef<() => void>(null);
-  const [interval, setUseInterval] = React.useState<any>();
-  const [status, setStatus] = React.useState<'pause' | 'play'>(options?.status || 'play');
+  const savedCallback = React.useRef<() => void>(() => {});
+  const [intervalId, setIntervalId] = React.useState<ReturnType<typeof setInterval> | null>(null);
+  const [status, setStatus] = React.useState<IntervalStatus>(options?.status || 'play');
 
-  const toggleInterval = React.useCallback((status: 'pause' | 'play') => {
-    setStatus(status);
+  const toggleInterval = React.useCallback((newStatus: IntervalStatus) => {
+    setStatus(newStatus);
   }, []);
 
   const removeInterval = React.useCallback(() => {
-    clearInterval(interval);
-  }, [interval]);
+    if (intervalId !== null) {
+      clearInterval(intervalId);
+    }
+  }, [intervalId]);
 
-  // Remember the latest callback.
+  // Save latest callback
   React.useEffect(() => {
     savedCallback.current = callback;
   }, [callback]);
 
-  // Set up the interval.
+  // Start or stop interval depending on `status`
   React.useEffect(() => {
-    function tick() {
-      if (savedCallback.current) savedCallback.current();
-    }
     if (delay !== null && status === 'play') {
-      const id = setInterval(tick, delay);
-      setUseInterval(id);
+      const id = setInterval(() => savedCallback.current(), delay);
+      setIntervalId(id);
       return () => clearInterval(id);
     }
   }, [delay, status]);
@@ -40,27 +61,5 @@ function useInterval(callback: () => void, delay: number = 1000, options?: Inter
     toggleInterval,
   };
 }
-
-/*
-function useInterval(callback: () => void, delay: number = 1000) {
-	const savedCallback = React.useRef<any>();
-
-	// Remember the latest callback.
-	React.useEffect(() => {
-		savedCallback.current = callback;
-	}, [callback]);
-
-	// Set up the interval.
-	React.useEffect(() => {
-		function tick() {
-			savedCallback.current();
-		}
-		if (delay !== null) {
-			const id = setInterval(tick, delay);
-			return () => clearInterval(id);
-		}
-	}, [delay]);
-}
-*/
 
 export default useInterval;
