@@ -11,11 +11,6 @@ export function createSearchUrl(url: string, params?: Record<string, string | nu
     const key = param[0];
     const value = param[1];
 
-    if (key === 'store' && value) {
-      searchParams.set('storeId', value?.toString());
-      return;
-    }
-
     if (key && value instanceof Date) {
       searchParams.set(key, formatDate(value, 'YYYY-MM-DD'));
     } else if (key && value) {
