@@ -197,4 +197,4 @@ This project is licensed under the **MIT License** — see `LICENSE` for details
 
 ## 👨‍💻 Author
 
-Built with ❤️ by **Emmanuel (k1ngk1te)** — [https://github.com/](https://github.com/k1ngk1te)
+Built with ❤️ by **Emmanuel (k1ngk1te)** — [https://github.com/k1ngk1te](https://github.com/k1ngk1te)
