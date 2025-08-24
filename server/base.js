@@ -44,6 +44,13 @@ export const TEST_MODE = +process.env.TEST_MODE === 1;
 
 // ****** ENVS Stop *********
 
+const ERROR_CODES = {
+  ERROR_CSRF_100: {
+    code: 'ERROR_CSRF_100',
+    message: 'Unable to validate CSRF TOKEN. Please refresh this page and try again.',
+  },
+};
+
 const baseRouter = express.Router();
 
 // Apply Helmet middleware first for maximum protection
@@ -253,7 +260,6 @@ export async function authUserController(req, res) {
 
 // // verify CSRF_TOKEN middleware
 export function verifyCSRFTokenMiddleware(req, res, next) {
-  const failedMessage = 'Unable to validate CSRF TOKEN. Please refresh this page and try again.';
   try {
     // Get the token from the cookies
     const cookies = cookie.parse(req.headers.cookie || '');
@@ -264,8 +270,9 @@ export function verifyCSRFTokenMiddleware(req, res, next) {
 
     if (!headerCsrfToken || !cookieCsrfToken) {
       res.status(403).json({
+        errorCode: ERROR_CODES.ERROR_CSRF_100.code,
         status: 'error',
-        message: failedMessage + ' Token is not present in headers or cookies.',
+        message: ERROR_CODES.ERROR_CSRF_100.message + ' Token is not present in headers or cookies.',
       });
       return;
     }
@@ -273,8 +280,9 @@ export function verifyCSRFTokenMiddleware(req, res, next) {
     // Check they are both the same
     if (headerCsrfToken !== cookieCsrfToken) {
       res.status(403).json({
+        errorCode: ERROR_CODES.ERROR_CSRF_100.code,
         status: 'error',
-        message: failedMessage + 'CSRF Token is not valid.',
+        message: ERROR_CODES.ERROR_CSRF_100.message + 'CSRF Token is not valid.',
       });
       return;
     }
@@ -283,9 +291,12 @@ export function verifyCSRFTokenMiddleware(req, res, next) {
     next();
   } catch (error) {
     res.status(500).json({
+      errorCode: ERROR_CODES.ERROR_CSRF_100.code,
       status: 'error',
       message:
-        TEST_MODE && error.message ? error.message : failedMessage + ' Something went wrong on the client server.',
+        TEST_MODE && error.message
+          ? error.message
+          : ERROR_CODES.ERROR_CSRF_100.message + ' Something went wrong on the client server.',
     });
   }
 }
