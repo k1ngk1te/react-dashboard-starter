@@ -67,6 +67,7 @@ export async function login({
     if (error.errorCode === 'ERROR_CSRF_100') {
       // Refresh the browser
       window.location.href = window.location.href.toString();
+    } else {
       throw err;
     }
   }
