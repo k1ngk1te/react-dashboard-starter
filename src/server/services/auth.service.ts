@@ -15,18 +15,19 @@ export async function getAuth(): Promise<LoginResponseType> {
   if (!csrfToken && typeof response.headers.get === 'function' && response.headers.get(CSRF_TOKEN) !== undefined) {
     csrfToken = response.headers.get(CSRF_TOKEN)?.toString() || '';
   }
+  const BROWSER_REFRESHED_KEY = 'browser_refreshed';
   if (!csrfToken) {
     // Check if the refreshed is in the session storage
-    if (sessionStorage.getItem('browser_refreshed')) {
+    if (sessionStorage.getItem(BROWSER_REFRESHED_KEY)) {
       // Remove it and throw an error. Something must have gone wrong that may have prevented the token from being re-generated
       throw new AppError(400, 'CSRF TOKEN was not provided');
     }
     // Refresh the browser
-    sessionStorage.setItem('browser_refreshed', 'true');
+    sessionStorage.setItem(BROWSER_REFRESHED_KEY, 'true');
     window.location.href = window.location.href.toString();
   }
 
-  sessionStorage.removeItem('browser_refreshed'); // Remove the key if the browser already refreshed
+  sessionStorage.removeItem(BROWSER_REFRESHED_KEY); // Remove the key if the browser already refreshed
   const result = { ...responseData.data, csrfToken };
 
   return NewSuccessDataResponse(result, responseData.message);
