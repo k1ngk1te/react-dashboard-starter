@@ -22,7 +22,7 @@ export async function getAuth(): Promise<LoginResponseType> {
       throw new AppError(400, 'CSRF TOKEN was not provided');
     }
     // Refresh the browser
-    sessionStorage.setItem('browser-refreshed', 'true');
+    sessionStorage.setItem('browser_refreshed', 'true');
     window.location.href = window.location.href.toString();
   }
 
