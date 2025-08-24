@@ -3,17 +3,20 @@ import type { FormRule as AntdFormRule } from 'antd';
 export type ResponseType<DataType = undefined> = DataType extends void
   ? {
       message: string;
+      errorCode?: string;
       status: 'error' | 'success';
       data?: undefined;
     }
   : {
       message: string;
+      errorCode?: string;
       status: 'error' | 'success';
       data: DataType;
     };
 
 export type ResponseErrorType<DataType = undefined> = {
   message: string;
+  errorCode?: string;
   status: 'error' | 'success' | number;
   data?: DataType;
 };
