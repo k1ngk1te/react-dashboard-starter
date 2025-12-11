@@ -204,7 +204,7 @@ export const InputSearch = React.forwardRef<InputRef, InputSearchType>(
 
 export const Textarea = React.forwardRef<TextAreaRef, TextAreaType>(
   ({ className: propsClassName, error, label, required, ...props }, ref) => {
-    const className = classNames(inputClassName + ' rounded-[15px]', propsClassName || '');
+    const className = classNames(inputClassName + ' ', propsClassName || '');
     return (
       <>
         {label && (
@@ -215,10 +215,6 @@ export const Textarea = React.forwardRef<TextAreaRef, TextAreaType>(
         )}
 
         <AntdInput.TextArea
-          autoSize={{
-            minRows: 2,
-            maxRows: 4,
-          }}
           className={className}
           status={error ? 'error' : undefined}
           required={required}
