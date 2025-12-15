@@ -15,7 +15,7 @@ function IconButton({
 	...props
 }: ButtonType) {
 	const className = classNames(
-		'h-9 w-9 p-0 flex items-center justify-center rounded-full',
+		'flex items-center justify-center p-0',
 		propsClassName || ''
 	);
 
