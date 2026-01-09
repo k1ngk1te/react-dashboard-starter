@@ -34,7 +34,7 @@ export function useLoginMutation(options: MutationOptionsType<LoginResponseType[
         window.location.href = window.location.href as string;
         throw new AppError(500, 'CSRF Token is required. Refresh the page and try again.');
       }
-      return AuthService.login(csrfToken, form);
+      return AuthService.login({ csrfToken, data });
     },
     onSuccess(response) {
       options.onSuccess(response);
