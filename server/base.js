@@ -4,7 +4,6 @@ import crypto from 'crypto';
 import dotenv from 'dotenv';
 import express from 'express';
 import { rateLimit } from 'express-rate-limit';
-import helmet from 'helmet';
 import jwt from 'jsonwebtoken';
 import * as yup from 'yup';
 
@@ -52,9 +51,6 @@ const ERROR_CODES = {
 };
 
 const baseRouter = express.Router();
-
-// Apply Helmet middleware first for maximum protection
-baseRouter.use(helmet());
 
 // ****** CORS Start ********
 
@@ -334,7 +330,7 @@ export function generateCsrfTokenInResponse(res, token) {
         path: '/',
         sameSite: 'strict',
         secure: NODE_ENV !== 'development',
-      })
+      }),
     );
   } else if (token === null) {
     cookies.push(
@@ -344,7 +340,7 @@ export function generateCsrfTokenInResponse(res, token) {
         path: '/',
         sameSite: 'strict',
         secure: NODE_ENV !== 'development',
-      })
+      }),
     );
   }
 

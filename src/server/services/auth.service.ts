@@ -4,7 +4,7 @@ import { AppError, handleAllErrors } from '~/utils/errors';
 import HttpInstance from '~/utils/http';
 import * as AuthSerializer from '../serializers/auth.serializer';
 import { saveCredentials } from '../utils/auth';
-import { NewSuccessDataResponse } from '../utils/response';
+import { getResponseHeader, NewSuccessDataResponse } from '../utils/response';
 
 export async function getAuth(): Promise<LoginResponseType> {
   const response = await HttpInstance.current().get<LoginResponseType>('/api/auth/user');
@@ -12,9 +12,7 @@ export async function getAuth(): Promise<LoginResponseType> {
 
   // Get the CSRF_TOKEN FROM THE HEADERS
   let csrfToken = responseData.data.csrfToken;
-  if (!csrfToken && typeof response.headers.get === 'function' && response.headers.get(CSRF_TOKEN) !== undefined) {
-    csrfToken = response.headers.get(CSRF_TOKEN)?.toString() || '';
-  }
+  if (!csrfToken) csrfToken = getResponseHeader(response.headers, CSRF_TOKEN) || '';
   const BROWSER_REFRESHED_KEY = 'browser_refreshed';
   if (!csrfToken) {
     // Check if the refreshed is in the session storage
@@ -84,8 +82,7 @@ export async function logout({ csrfToken, token }: { csrfToken: string; token: s
     const responseData = response.data;
 
     // Get the CSRF_TOKEN FROM THE HEADERS IF PROVIDED
-    const newCsrfToken =
-      typeof response.headers.get === 'function' ? response.headers.get(CSRF_TOKEN)?.toString() : undefined;
+    const newCsrfToken = getResponseHeader(response.headers, CSRF_TOKEN);
 
     return NewSuccessDataResponse({ csrfToken: newCsrfToken }, responseData.message);
   } catch (err) {

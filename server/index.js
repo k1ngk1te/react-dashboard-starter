@@ -1,4 +1,5 @@
 import express from 'express';
+import helmet from 'helmet';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -10,6 +11,9 @@ const __dirname = path.dirname(__filename);
 export const TRUST_PROXY = process.env.TRUST_PROXY && !isNaN(+process.env.TRUST_PROXY) ? +process.env.TRUST_PROXY : 0;
 
 const app = express();
+
+// Apply Helmet middleware first for maximum protection
+app.use(helmet());
 
 // Rate Limiter
 app.set('trust proxy', TRUST_PROXY);
