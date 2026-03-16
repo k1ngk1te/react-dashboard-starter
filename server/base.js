@@ -224,7 +224,7 @@ export async function authUserController(req, res) {
       const decoded = jwt.verify(token, SECRET_KEY);
       if (!decoded || !decoded.token) {
         res.status(401).json({
-          success: 'error',
+          status: 'error',
           message: 'Authentication credentials are invalid',
         });
       } else {
