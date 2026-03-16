@@ -30,7 +30,10 @@ export function useLoginMutation(options: MutationOptionsType<LoginResponseType[
   const { csrfToken } = useAuthContext();
   const mutation = useMutation({
     async mutationFn(data: LoginRequestDataType) {
-      if (!csrfToken) throw new AppError(500, 'CSRF Token is required');
+      if (!csrfToken) {
+        window.location.href = window.location.href as string;
+        throw new AppError(500, 'CSRF Token is required. Refresh the page and try again.');
+      }
       return AuthService.login({ csrfToken, data });
     },
     onSuccess(response) {

@@ -42,7 +42,7 @@ A production-ready **React + TypeScript** dashboard starter for building admin p
 
 ```bash
 # clone
-git clone https://github.com/<your-username>/react-starter-dashboard.git
+git clone https://github.com/k1ngk1te/react-dashboard-starter.git
 cd react-starter-dashboard
 
 # install dependencies
