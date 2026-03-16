@@ -32,7 +32,7 @@ A full inventory of what's included in this starter.
 ## Frontend
 
 - React 19 with TypeScript strict mode
-- Vite 6 — fast dev server with HMR, API proxy to Express
+- Vite 8 — fast dev server with HMR, API proxy to Express
 - Path alias (`~/*` → `src/*`) for clean imports
 - Ant Design 5 theme customisation via `ConfigProvider` tokens
 - Tailwind CSS with custom breakpoints (`xs`, `sm`, `md`, `lg`, `xl`, `2xl`)

@@ -23,7 +23,7 @@ The client runs on `http://localhost:3000` and the Express server on `http://loc
 | Layer | Technology |
 |---|---|
 | Frontend | React 19, TypeScript 5.8 |
-| Build tool | Vite 6 |
+| Build tool | Vite 8 |
 | UI library | Ant Design 5 |
 | Styling | Tailwind CSS 3 |
 | Routing | React Router 7 |
