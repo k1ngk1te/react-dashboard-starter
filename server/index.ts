@@ -1,14 +1,17 @@
 import express from 'express';
 import helmet from 'helmet';
 import path from 'path';
-import { fileURLToPath } from 'url';
 
-import { router } from './base.js';
+import { NODE_ENV, validateEnv, router } from './base.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+export const TRUST_PROXY =
+  process.env.TRUST_PROXY && !isNaN(+process.env.TRUST_PROXY) ? +process.env.TRUST_PROXY : 0;
 
-export const TRUST_PROXY = process.env.TRUST_PROXY && !isNaN(+process.env.TRUST_PROXY) ? +process.env.TRUST_PROXY : 0;
+// ****** Env Validation ********
+if (NODE_ENV === 'production') {
+  validateEnv();
+}
+// ******************************
 
 const app = express();
 
@@ -22,13 +25,13 @@ app.set('trust proxy', TRUST_PROXY);
 app.use(express.json());
 
 // Serve static files from Vite's build output directory
-app.use(express.static(path.join(__dirname, '../dist')));
+app.use(express.static(path.join(process.cwd(), 'dist')));
 
 app.use(router);
 
 // Handle all other routes by serving the frontend (index.html)
 app.get('*', (_req, res) => {
-  res.sendFile(path.resolve(__dirname, '../dist', 'index.html'));
+  res.sendFile(path.resolve(process.cwd(), 'dist', 'index.html'));
 });
 
 // Set up the server to listen on a port

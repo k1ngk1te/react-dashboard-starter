@@ -2,7 +2,7 @@ import cookie from 'cookie';
 import cors from 'cors';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 import * as yup from 'yup';
@@ -38,10 +38,29 @@ export const NODE_ENV = process.env.NODE_ENV;
 export const SECRET_KEY = process.env.SECRET_KEY || 'mrhqpzfUCPLie3537e7ebb5f58e';
 export const JWT_EXPIRES =
   process.env.JWT_EXPIRES && !isNaN(+process.env.JWT_EXPIRES) ? +process.env.JWT_EXPIRES : 14400;
-export const PREVENT_CACHE_ON_GET_AUTH_USER = +process.env.PREVENT_CACHE_ON_GET_AUTH_USER === 0 ? false : true;
-export const TEST_MODE = +process.env.TEST_MODE === 1;
+export const PREVENT_CACHE_ON_GET_AUTH_USER = process.env.PREVENT_CACHE_ON_GET_AUTH_USER !== '0';
+export const TEST_MODE = process.env.TEST_MODE === '1';
 
 // ****** ENVS Stop *********
+
+// ****** Env Validation Start ********
+
+export function validateEnv(): void {
+  const required = ['SECRET_KEY', 'AUTH_KEY'] as const;
+  const missing = required.filter((key) => !process.env[key]);
+  if (missing.length > 0) {
+    throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+  }
+}
+
+// ****** Env Validation Stop *********
+
+type JwtPayloadDecoded = {
+  token: string;
+  user: Record<string, unknown>;
+  iat: number;
+  exp: number;
+};
 
 const ERROR_CODES = {
   ERROR_CSRF_100: {
@@ -54,42 +73,39 @@ const baseRouter = express.Router();
 
 // ****** CORS Start ********
 
-// Configure CORS options
-const corsOptions = {
+const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or curl)
     if (!origin || ALLOWED_ORIGINS.length === 0) return callback(null, true);
     // Allow if the origin is in our allowed list
-    if (ALLOWED_ORIGINS.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
+    if (!ALLOWED_ORIGINS.includes(origin)) {
+      return callback(new Error('The CORS policy for this site does not allow access from the specified Origin.'), false);
     }
     return callback(null, true);
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Specify allowed methods
-  credentials: true, // This is crucial for sending cookies and custom headers
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
 };
 
-// Apply the CORS middleware with your custom options
 baseRouter.use(cors(corsOptions));
 
 // ****** CORS Stop  ********
 
 // ****** Rate Limiter Start *******
 
-function keyGenerator(req, _) {
+function keyGenerator(req: Request, _res: Response): string {
   if (!req.ip) {
     if (TEST_MODE) console.error('Warning: request.ip is missing!');
-    return req.socket.remoteAddress;
+    return req.socket.remoteAddress ?? '';
   }
 
   return req.ip.replace(/:\d+[^:]*$/, '');
 }
 
-// Limiter for sensitive authentication routes
+// Limiter for sensitive authentication routes (default window: 1 hour, max: 50 requests)
 const authLimiter = rateLimit({
-  windowMs: API_AUTH_LIMITER_EXPIRES * 1000, // 15 minutes
-  limit: API_AUTH_LIMITER_MAX, // Max 10 requests per IP per window
+  windowMs: API_AUTH_LIMITER_EXPIRES * 1000,
+  limit: API_AUTH_LIMITER_MAX,
   message: {
     status: 'error',
     message: 'Too many login attempts from this IP, please try again after 15 minutes',
@@ -98,10 +114,10 @@ const authLimiter = rateLimit({
   keyGenerator,
 });
 
-// Limiter for general API data fetching
+// Limiter for general API data fetching (default window: 15 minutes, max: 10 requests)
 const apiLimiter = rateLimit({
-  windowMs: API_DEFAULT_LIMITER_EXPIRES * 1000, // 1 hour
-  limit: API_DEFAULT_LIMITER_MAX, // Max 100 requests per IP per hour
+  windowMs: API_DEFAULT_LIMITER_EXPIRES * 1000,
+  limit: API_DEFAULT_LIMITER_MAX,
   message: {
     status: 'error',
     message: 'You have exceeded the API request limit. Please try again later.',
@@ -140,10 +156,10 @@ export const loginRequestSchema = yup.object({
 
 // ********** Controllers Start ***********
 
-// // Controller to check if the backend server is live
-export async function healthController(req, res) {
+// Controller to check if the backend server is live
+export async function healthController(_req: Request, res: Response): Promise<void> {
   try {
-    const cookies = cookie.parse(req.headers.cookie || '');
+    const cookies = cookie.parse(_req.headers.cookie || '');
 
     // Add CSRF_TOKEN IF NOT PRESENT
     const csrfToken = cookies[CSRF_TOKEN];
@@ -153,18 +169,19 @@ export async function healthController(req, res) {
     res.status(200).json({
       status: 'success',
       message: 'Health is Good',
-      data: { ip: TEST_MODE ? req.ip : undefined },
+      data: { ip: TEST_MODE ? _req.ip : undefined },
     });
   } catch (error) {
     res.status(500).json({
       status: 'error',
-      message: TEST_MODE && error.message ? error.message : 'Something went wrong on the client server.',
+      message:
+        TEST_MODE && error instanceof Error ? error.message : 'Something went wrong on the client server.',
     });
   }
 }
 
-// // Login Controller
-export async function loginController(req, res) {
+// Login Controller
+export async function loginController(req: Request, res: Response): Promise<void> {
   try {
     const { credentials } = await loginRequestSchema.validate({ ...req.body }, { abortEarly: true });
 
@@ -180,15 +197,23 @@ export async function loginController(req, res) {
       message: 'Logged in successfully',
     });
   } catch (error) {
+    if (error instanceof yup.ValidationError) {
+      res.status(400).json({
+        status: 'error',
+        message: error.message,
+      });
+      return;
+    }
     res.status(500).json({
       status: 'error',
-      message: TEST_MODE && error.message ? error.message : 'Something went wrong on the client server.',
+      message:
+        TEST_MODE && error instanceof Error ? error.message : 'Something went wrong on the client server.',
     });
   }
 }
 
-// // Logout Controller
-export async function logoutController(_, res) {
+// Logout Controller
+export async function logoutController(_req: Request, res: Response): Promise<void> {
   try {
     // Add CSRF_TOKEN
     generateCsrfTokenInResponse(res, null);
@@ -197,13 +222,13 @@ export async function logoutController(_, res) {
   } catch (error) {
     res.status(500).json({
       status: 'error',
-      message: error.message || 'Something went wrong on the client server.',
+      message: error instanceof Error ? error.message : 'Something went wrong on the client server.',
     });
   }
 }
 
-// // Auth User Controller
-export async function authUserController(req, res) {
+// Auth User Controller
+export async function authUserController(req: Request, res: Response): Promise<void> {
   try {
     if (PREVENT_CACHE_ON_GET_AUTH_USER) {
       // Prevent netlify from caching this endpoint
@@ -221,14 +246,14 @@ export async function authUserController(req, res) {
     else res.setHeader(CSRF_TOKEN, csrfToken);
 
     if (token) {
-      const decoded = jwt.verify(token, SECRET_KEY);
+      const decoded = jwt.verify(token, SECRET_KEY) as JwtPayloadDecoded;
       if (!decoded || !decoded.token) {
         res.status(401).json({
           status: 'error',
           message: 'Authentication credentials are invalid',
         });
       } else {
-        const { iat, exp, ...data } = decoded;
+        const { iat: _iat, exp: _exp, ...data } = decoded;
 
         res.status(200).json({
           status: 'success',
@@ -245,7 +270,7 @@ export async function authUserController(req, res) {
   } catch (error) {
     res.status(500).json({
       status: 'error',
-      message: error.message || 'Something went wrong on the client server.',
+      message: error instanceof Error ? error.message : 'Something went wrong on the client server.',
     });
   }
 }
@@ -254,8 +279,8 @@ export async function authUserController(req, res) {
 
 // ********** Middlewares Start ************
 
-// // verify CSRF_TOKEN middleware
-export function verifyCSRFTokenMiddleware(req, res, next) {
+// verify CSRF_TOKEN middleware
+export function verifyCSRFTokenMiddleware(req: Request, res: Response, next: NextFunction): void {
   try {
     // Get the token from the cookies
     const cookies = cookie.parse(req.headers.cookie || '');
@@ -290,7 +315,7 @@ export function verifyCSRFTokenMiddleware(req, res, next) {
       errorCode: ERROR_CODES.ERROR_CSRF_100.code,
       status: 'error',
       message:
-        TEST_MODE && error.message
+        TEST_MODE && error instanceof Error
           ? error.message
           : ERROR_CODES.ERROR_CSRF_100.message + ' Something went wrong on the client server.',
     });
@@ -302,18 +327,18 @@ export function verifyCSRFTokenMiddleware(req, res, next) {
 // ********** Utils Start ************
 
 // Function to generate a random token
-export function generateCsrfToken() {
+export function generateCsrfToken(): string {
   // Generate 32 random bytes and convert to a hex string
   return crypto.randomBytes(32).toString('hex');
 }
 
-// Function to generate a CSRF token and place in the response headers
-// if auth token is passed in then set the auth header
-export function generateCsrfTokenInResponse(res, token) {
+// Function to generate a CSRF token and place in the response headers.
+// If auth token is passed in then set the auth cookie; if null, clear it.
+export function generateCsrfTokenInResponse(res: Response, token?: string | null): void {
   const csrfToken = generateCsrfToken();
   res.setHeader(CSRF_TOKEN, csrfToken);
 
-  const cookies = [
+  const cookies: string[] = [
     cookie.serialize(CSRF_TOKEN, csrfToken, {
       expires: CSRF_TOKEN_EXPIRES ? new Date(Date.now() + CSRF_TOKEN_EXPIRES * 1000) : undefined,
       httpOnly: true,
@@ -349,5 +374,5 @@ export function generateCsrfTokenInResponse(res, token) {
 
 // ********** Utils Stop *************
 
-// // Export Final
+// Export Final
 export const router = baseRouter;
