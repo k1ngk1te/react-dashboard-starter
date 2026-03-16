@@ -2,12 +2,13 @@ import { CSRF_TOKEN } from '~/config';
 import type { LoginRequestDataType, LoginResponseType, LogoutResponseType, ResponseType } from '~/types';
 import { AppError, handleAllErrors } from '~/utils/errors';
 import HttpInstance from '~/utils/http';
+import { API_GET_USER_URL, API_LOGOUT_URL } from '../config/api-routes';
 import * as AuthSerializer from '../serializers/auth.serializer';
 import { saveCredentials } from '../utils/auth';
 import { getResponseHeader, NewSuccessDataResponse } from '../utils/response';
 
 export async function getAuth(): Promise<LoginResponseType> {
-  const response = await HttpInstance.current().get<LoginResponseType>('/api/auth/user');
+  const response = await HttpInstance.current().get<LoginResponseType>(API_GET_USER_URL);
   const responseData = response.data;
 
   // Get the CSRF_TOKEN FROM THE HEADERS
@@ -78,7 +79,7 @@ export async function login({
 
 export async function logout({ csrfToken, token }: { csrfToken: string; token: string }): Promise<LogoutResponseType> {
   try {
-    const response = await HttpInstance.login(token, csrfToken).post<ResponseType>('/api/auth/logout/', {});
+    const response = await HttpInstance.login(token, csrfToken).post<ResponseType>(API_LOGOUT_URL, {});
     const responseData = response.data;
 
     // Get the CSRF_TOKEN FROM THE HEADERS IF PROVIDED
