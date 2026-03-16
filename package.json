@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc -b && vite build --emptyOutDir",
     "build:netlify": "netlify build",
-    "dev": "concurrently \"npm run dev:client\" \"npm run dev:node\"",
+    "dev": "concurrently --names \"CLIENT,SERVER\" \"npm run dev:client\" \"npm run dev:node\"",
     "dev:client": "vite",
     "dev:netlify": "netlify build && netlify dev",
     "dev:node": "cross-env NODE_ENV=development nodemon server/index.js",
