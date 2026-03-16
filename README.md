@@ -1,200 +1,124 @@
-# 🚀 React Starter Dashboard
+# Kite React Dashboard Starter
 
-A production-ready **React + TypeScript** dashboard starter for building admin panels, analytics apps, and internal tools — fast. Comes with modern tooling, a feature-based structure, reusable hooks, and UI powered by **Ant Design (antd)** and **Tailwind CSS**.
-
----
-
-## ✨ Key Features
-
-- ✅ **React + TypeScript**
-- ✅ **Ant Design (antd)** UI library (pre-built components & patterns)
-- ✅ **Tailwind CSS** utility styling
-- ⚡ **Vite** for fast dev & build
-- 🔁 **React Query** for server state & caching
-- ♻️ Feature-based folder structure (components, hooks, pages, store)
-- 🔒 Auth-ready architecture (placeholder flows)
-- ✅ Pre-configured **ESLint** and **Prettier**
-- ♻️ Example hooks & utilities (in `src/hooks/`)
-- 🧩 Pagination, modals, tables, forms examples included
+A production-ready full-stack dashboard starter built with React, TypeScript, and Express. Includes JWT authentication, CSRF protection, rate limiting, a rich component library, and deployment support for both Netlify and self-hosted environments.
 
 ---
 
-## 📦 Tech Stack
-
-- React (TypeScript)
-- Vite
-- Ant Design (antd)
-- Tailwind CSS
-- React Router
-- React Query
-- ESLint + Prettier
-
----
-
-## 🔧 Prerequisites
-
-- Node.js (v16+ recommended)
-- npm or yarn
-
----
-
-## ⛳ Quick Start
+## Quick Start
 
 ```bash
-# clone
-git clone https://github.com/k1ngk1te/react-dashboard-starter.git
-cd react-starter-dashboard
-
-# install dependencies
+# Install dependencies
 npm install
-# or
-# yarn install
 
-# start dev server
+# Start development (client + server concurrently)
 npm run dev
-# or
-# yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) (Vite default port change in the vite.config.ts) in your browser.
+The client runs on `http://localhost:3000` and the Express server on `http://localhost:5000`.
 
 ---
 
-## 📁 Project Structure (example)
+## Tech Stack
 
-```
-src/
- ├── components/            # shared UI components (cards, buttons, etc.)
- ├── hooks/                 # custom hooks (useInfiniteScroll, useDebounce, etc.)
- ├── layout/                # dashboard/layout components
- ├── pages/                 # route-level components
- ├── store/                 # API queries & global store (react-query, contexts)
- ├── services/              # api service wrappers, axios/fetch utils
- ├── styles/                # tailwind/global css
- ├── utils/                 # helpers, date utils, constants
- ├── App.tsx                # app bootstrap (AntD + Tailwind imports)
- └── index.tsx              # entry
-```
-
----
-
-## ⚙️ Environment Variables
-
-Create a `.env` (or `.env.local`) file in project root. Example:
-
-```env
-VITE_API_BASE_URL=https://api.example.com
-VITE_APP_NAME=React Starter Dashboard
-VITE_AUTH_ENABLED=true
-```
-
-> All `VITE_` prefixed vars will be exposed to the client code (via `import.meta.env.VITE_...`).
+| Layer | Technology |
+|---|---|
+| Frontend | React 19, TypeScript 5.8 |
+| Build tool | Vite 6 |
+| UI library | Ant Design 5 |
+| Styling | Tailwind CSS 3 |
+| Routing | React Router 7 |
+| Server state | TanStack React Query 5 |
+| Tables | TanStack React Table 8 |
+| HTTP client | Axios |
+| Backend | Express 4 |
+| Auth | JWT + CSRF tokens |
+| Validation | Yup |
+| Date handling | Dayjs |
 
 ---
 
-## 🧩 Ant Design (antd) Notes
+## Project Structure
 
-- Ant Design is included as the UI library for components (forms, tables, modals, icons, etc.).
-- Import antd styles in your entry file (`src/main.tsx` / `src/main.jsx`):
-
-```ts
-// For antd v5:
-import 'antd/dist/reset.css';
-
-// or for older antd versions:
-import 'antd/dist/antd.css';
 ```
-
-- If you want theme customization (less variables), use `craco`/`vite-plugin-style-import` or the AntD less theme approach with Vite plugin. (This starter ships with plain CSS/Tailwind integration out-of-the-box.)
-
----
-
-## 📜 Available Scripts
-
-Run with `npm run <script>` or `yarn <script>`.
-
-| Script    | Description                       |
-| --------- | --------------------------------- |
-| `dev`     | Start Vite dev server             |
-| `build`   | Build production bundle           |
-| `preview` | Preview production build locally  |
-| `lint`    | Run ESLint                        |
-| `format`  | Run Prettier or formatting script |
-| `test`    | Run unit tests (if configured)    |
-
-Example:
-
-```bash
-npm run dev
-npm run build
-npm run preview
-npm run lint
-npm run format
-npm test
+├── server/                  # Express backend (TypeScript)
+│   ├── base.ts              # Routes, controllers, middleware, CSRF, rate limiting
+│   └── index.ts             # Server entry point, static file serving
+├── netlify/
+│   └── functions/
+│       └── serverless.ts    # Netlify serverless function wrapper
+├── src/                     # React frontend
+│   ├── components/          # Reusable UI components
+│   │   ├── controls/        # 40+ UI controls (Button, Input, Modal, Table, etc.)
+│   │   └── common/          # Container, Portal, ErrorBoundary, SplashScreen
+│   ├── config/              # App-wide config (theme, routes, API URLs, constants)
+│   ├── containers/          # Page-level logic components (Home, Login)
+│   ├── hooks/               # Custom hooks
+│   ├── layout/              # Layout wrapper + route protection
+│   ├── pages/               # Route-level page components
+│   ├── server/              # Client-side API layer
+│   │   ├── config/          # API route URL constants
+│   │   ├── serializers/     # API response transformers
+│   │   ├── services/        # Auth service functions
+│   │   ├── types/           # API-specific TypeScript types
+│   │   └── utils/           # HTTP, auth, pagination, response helpers
+│   ├── store/               # Global state
+│   │   ├── contexts/        # Auth, Alert, QueryProvider contexts
+│   │   └── queries/         # React Query hooks
+│   ├── styles/              # Global CSS + Ant Design overrides
+│   ├── types/               # Shared TypeScript types
+│   └── utils/               # Error handling, HTTP, dates, formatting
+├── public/                  # Static assets
+├── dist/                    # Build output — gitignored
+│   ├── server/              # Compiled Express server JS
+│   └── netlify/             # Compiled Netlify function JS
+└── docs/                    # Documentation
 ```
 
 ---
 
-## 🧭 Routing & State
+## Scripts
 
-- Routes are managed with **React Router** (v6+).
-- Server state is recommended via **React Query** (already wired in examples).
-- Query params utilities and useful hooks (e.g., `useSearchParams`, `useDebouncedSearchParamInput`) are included in `src/hooks/`.
-
----
-
-## ✅ Examples & Patterns Included
-
-- Infinite scroll sentinel (`useInfiniteScroll`)
-- Debounced search input synced to URL (`useDebouncedSearchParamInput`)
-- Auth-ready patterns & contexts
-- Pagination + filters example
-- File view/download helper hooks
-- Reusable components built on the antd library like `Input`, `Form`, and more UI components.
+| Script | Description |
+|---|---|
+| `npm run dev` | Start client + server concurrently |
+| `npm run dev:client` | Start Vite dev server only |
+| `npm run dev:node` | Start Express server only (nodemon + tsx) |
+| `npm run build` | Type-check, build frontend, compile server to `dist/` |
+| `npm start` | Run production server (`node dist/server/index.js`) |
+| `npm run lint` | Run ESLint |
+| `npm run dev:netlify` | Build and run Netlify Dev locally |
 
 ---
 
-## 🛠 Customization Tips
+## Documentation
 
-- **Tailwind**: edit `tailwind.config.js` to adjust theme, breakpoints, etc.
-- **AntD theme**: if customizing AntD tokens, add a Vite plugin or Less setup to override variables.
-- **New pages**: add components under `src/pages` and register them in router.
-
----
-
-## ✅ Best Practices
-
-- Keep API calls in `src/services/` and call them from `src/store/queries` (React Query).
-- Prefer hooks for shared logic (`src/hooks/`).
-- Use `prefix` pattern with query param hooks to avoid collisions when reusing hooks across nested components.
+- [API Reference](docs/api.md) — Endpoints, request/response formats, CSRF usage
+- [Routing](docs/routing.md) — Route structure, protection wrappers, adding routes
+- [State Management](docs/state-management.md) — Auth context, Alert context, React Query
+- [Environment Variables](docs/environment-variables.md) — All env vars with descriptions and defaults
+- [Deployment](docs/deployment.md) — Netlify and self-hosted deployment guides
+- [Features](docs/features.md) — Full list of included features, hooks, and components
+- [Glossary](docs/glossary.md) — Key terms and concepts used in this project
 
 ---
 
-## 🧾 Contributing
+## Replacing Mock Auth
 
-1. Fork the repo
-2. Create a feature branch (`git checkout -b feature/xyz`)
-3. Make changes, run `npm run lint` and `npm run test`
-4. Submit a PR with a clear description
+The login function in `src/server/services/auth.service.ts` uses hardcoded mock credentials for quick local testing. To connect a real backend:
 
-Please follow the code style rules (ESLint & Prettier).
-
----
-
-## ❗ Troubleshooting
-
-- If UI styles look broken, ensure AntD styles are imported in `src/index.tsx`.
-- When using SSR (Next.js), guard any `window` / `localStorage` references with `typeof window !== 'undefined'`.
-- For portal/modals with infinite scroll, pass the correct scroll `root` to observers or fallback to `scroll` listeners.
+1. Replace the mock data in `login()` with a real API call to your auth provider
+2. Update `AuthSerializer.serializeLogin()` in `src/server/serializers/auth.serializer.ts` to match your API response shape
+3. Set `TEST_MODE=0` in your production `.env`
 
 ---
 
-## 📄 License
+## Prerequisites
 
-This project is licensed under the **MIT License** — see `LICENSE` for details.
+- Node.js v18+
+- npm v9+
 
 ---
 
-## 👨‍💻 Author
+## Author
 
-Built with ❤️ by **Emmanuel (k1ngk1te)** — [https://github.com/k1ngk1te](https://github.com/k1ngk1te)
+Built by **Emmanuel (k1ngk1te)** — [https://github.com/k1ngk1te](https://github.com/k1ngk1te)
