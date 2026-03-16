@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 import express, { NextFunction, Request, Response } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
-import * as yup from 'yup';
+import { z } from 'zod';
 
 // ****** ENVS Start ********
 
@@ -143,13 +143,11 @@ baseRouter.get('/api/auth/user/', authLimiter, authUserController);
 // ********** Validators Start ************
 
 // Schema for the login credentials coming from your React frontend
-export const loginRequestSchema = yup.object({
-  credentials: yup
-    .object({
-      token: yup.string().required('Token is required'),
-      user: yup.object().required('User object is required.'),
-    })
-    .required('Credentials are required.'),
+export const loginRequestSchema = z.object({
+  credentials: z.object({
+    token: z.string({ message: 'Token is required' }),
+    user: z.record(z.string(), z.unknown(), { message: 'User object is required.' }),
+  }, { message: 'Credentials are required.' }),
 });
 
 // ********** Validators Stop *************
@@ -183,7 +181,7 @@ export async function healthController(_req: Request, res: Response): Promise<vo
 // Login Controller
 export async function loginController(req: Request, res: Response): Promise<void> {
   try {
-    const { credentials } = await loginRequestSchema.validate({ ...req.body }, { abortEarly: true });
+    const { credentials } = loginRequestSchema.parse(req.body);
 
     const token = jwt.sign(credentials, SECRET_KEY, {
       expiresIn: JWT_EXPIRES,
@@ -197,10 +195,10 @@ export async function loginController(req: Request, res: Response): Promise<void
       message: 'Logged in successfully',
     });
   } catch (error) {
-    if (error instanceof yup.ValidationError) {
+    if (error instanceof z.ZodError) {
       res.status(400).json({
         status: 'error',
-        message: error.message,
+        message: error.issues[0].message,
       });
       return;
     }

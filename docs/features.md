@@ -23,7 +23,7 @@ A full inventory of what's included in this starter.
 - Rate limiting — separate limiters for auth and general API routes (configurable via env vars)
 - CORS — configurable origin whitelist
 - Helmet — HTTP security headers
-- Yup — request body validation with proper 400 responses for validation errors
+- Zod — request body validation with proper 400 responses for validation errors
 - Startup env validation — throws on missing required vars in production
 - Netlify serverless support via `serverless-http`
 

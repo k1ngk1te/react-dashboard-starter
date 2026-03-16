@@ -32,7 +32,7 @@ The client runs on `http://localhost:3000` and the Express server on `http://loc
 | HTTP client | Axios |
 | Backend | Express 4 |
 | Auth | JWT + CSRF tokens |
-| Validation | Yup |
+| Validation | Zod |
 | Date handling | Dayjs |
 
 ---
