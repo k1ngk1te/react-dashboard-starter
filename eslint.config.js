@@ -20,12 +20,10 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
-      '@typescript-eslint/no-explicit-any': 0,
-      '@typescript-eslint/no-unused-vars': 'off',
-
-      'no-mixed-spaces-and-tabs': 0,
-
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': 'off', // handled by tsconfig noUnusedLocals/noUnusedParameters
+      'no-mixed-spaces-and-tabs': 'error',
       'react/display-name': 'off',
     },
-  }
+  },
 );
