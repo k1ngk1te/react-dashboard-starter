@@ -36,7 +36,8 @@ export class MockAuthRepository extends BaseAuthRepository {
     } catch (err) {
       const error = handleAllErrors(err);
       if (error.errorCode === 'ERROR_CSRF_100') {
-        window.location.href = window.location.href.toString();
+        const newCsrfToken = await this.refreshCsrfToken();
+        result = await this.saveCredentials(newCsrfToken, credentials);
       } else {
         throw err;
       }

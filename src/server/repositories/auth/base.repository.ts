@@ -8,7 +8,7 @@ import type {
 } from '~/types';
 import { AppError, handleAllErrors } from '~/utils/errors';
 import HttpInstance from '~/utils/http';
-import { API_GET_USER_URL, API_LOGIN_URL, API_LOGOUT_URL } from '../../config/api-routes';
+import { API_GET_USER_URL, API_HEALTH_URL, API_LOGIN_URL, API_LOGOUT_URL } from '../../config/api-routes';
 import { getResponseHeader, NewSuccessDataResponse } from '../../utils/response';
 import type { IAuthRepository } from './auth.type';
 
@@ -16,6 +16,14 @@ export abstract class BaseAuthRepository implements IAuthRepository {
   abstract login(params: { csrfToken: string; data: LoginRequestDataType }): Promise<LoginResponseType>;
   abstract logout(params: { csrfToken: string; token: string }): Promise<LogoutResponseType>;
   abstract getAuth(): Promise<LoginResponseType>;
+
+  protected async refreshCsrfToken(): Promise<string> {
+    const response = await HttpInstance.current().get<ResponseType>(API_HEALTH_URL);
+    const newCsrfToken = getResponseHeader(response.headers, CSRF_TOKEN) || '';
+    if (!newCsrfToken) throw new AppError(500, 'Unable to refresh CSRF token');
+    HttpInstance.csrf(newCsrfToken);
+    return newCsrfToken;
+  }
 
   protected async getCredentials(): Promise<LoginResponseType> {
     const response = await HttpInstance.current().get<LoginResponseType>(API_GET_USER_URL);
@@ -30,7 +38,8 @@ export abstract class BaseAuthRepository implements IAuthRepository {
         throw new AppError(400, 'CSRF TOKEN was not provided');
       }
       sessionStorage.setItem(BROWSER_REFRESHED_KEY, 'true');
-      window.location.href = window.location.href.toString();
+      await this.refreshCsrfToken();
+      return this.getCredentials();
     }
 
     sessionStorage.removeItem(BROWSER_REFRESHED_KEY);
@@ -70,7 +79,8 @@ export abstract class BaseAuthRepository implements IAuthRepository {
     } catch (err) {
       const error = handleAllErrors(err);
       if (error.errorCode === 'ERROR_CSRF_100') {
-        window.location.href = window.location.href.toString();
+        const newCsrfToken = await this.refreshCsrfToken();
+        return this.removeCredentials({ csrfToken: newCsrfToken, token });
       }
       throw err;
     }
