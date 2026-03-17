@@ -13,4 +13,9 @@ export class ApiAuthRepository extends BaseAuthRepository {
   async logout(): Promise<LogoutResponseType> {
     throw new Error('NOT_IMPLEMENTED');
   }
+
+  // Implement when the external API supports refresh tokens.
+  // async refreshAccessToken(refreshToken: string): Promise<{ token: string; refreshToken?: string }> {
+  //   throw new Error('NOT_IMPLEMENTED');
+  // }
 }
