@@ -4,54 +4,59 @@ State is split into three layers, each with a distinct responsibility:
 
 | Layer | Tool | Purpose |
 |---|---|---|
-| Auth state | React Context (`AuthContext`) | Current user, CSRF token, login/logout |
+| Auth state | External pub-sub store (`authStore`) | Current user, CSRF token, login/logout |
 | UI feedback | React Context (`AlertContext`) | Toast notifications |
 | Server state | TanStack React Query | Data fetching, caching, mutations |
 
-All three are composed in `src/store/contexts/provider.tsx` and wrap the entire app.
+Alert and React Query are composed in `src/store/contexts/provider.tsx`. Auth state lives in `src/store/listeners/auth.ts` — outside React entirely.
 
 ---
 
-## AuthContext
+## Auth Store
 
-**Location:** `src/store/contexts/auth/`
+**Location:** `src/store/listeners/auth.ts`
 
-Manages the authentication lifecycle — whether a user is logged in, their data, and the CSRF token used for mutating requests.
+A plain pub-sub store that holds auth state outside React. Components subscribe via `useSyncExternalStore` — no Context, no Provider, no re-render overhead from a wrapping tree.
 
-### Shape
+### Store shape
 
 ```ts
-type AuthContextType = {
-  auth: 'AUTHENTICATED' | 'NOT_AUTHENTICATED' | null;
-  loading: boolean;
-  csrfToken: string | null;
-  token: string | null;
-  data: AuthDataType | null;
-}
+type AuthStoreDataType = {
+  data: AuthDataType | null;   // user object, null when logged out
+  token: string | null;        // raw JWT, used for query cache keys
+  csrfToken: string | null;    // kept in memory only, never localStorage
+  loading: boolean;            // true until CheckAuth resolves
+};
 ```
 
-- `auth` — `null` means the initial check hasn't completed yet
-- `csrfToken` — extracted from the `X-Csrf-Token` response header and kept in memory (never in localStorage)
-- `token` — the raw JWT string, used as an identifier for query cache keys
+`auth: boolean` is derived in `useAuthContext()` as `!!data && !!token`.
 
 ### Available hooks
 
 ```ts
-// Full auth context (auth state, loading, token, csrfToken)
-const { auth, loading, csrfToken } = useAuthContext();
+// Full state + actions
+const { auth, loading, data, token, csrfToken } = useAuthContext();
 
-// Just the user data
-const user = useUserContext(); // returns AuthDataType | null
+// Throws 401 AppError if not authenticated — use inside protected routes only
+const { user, token, csrfToken } = useUserContext();
 ```
 
-### Methods
+### Actions
+
+Actions are plain functions exported from `src/store/contexts/auth/context.ts`. They write to the store directly — no dispatch, no reducer.
+
+```ts
+import { authActions } from '~/store/contexts/auth/context';
+
+authActions.login(payload);           // set user + token + csrfToken, loading → false
+authActions.logout(payload);          // clear token, keep data, update csrfToken
+authActions.changeCSRFToken(token);   // update csrfToken after rotation
+```
+
+They are also returned by `useAuthContext()` for convenience:
 
 ```ts
 const { login, logout, changeCSRFToken } = useAuthContext();
-
-login(data);              // store user + token after successful auth
-logout();                 // clear user data
-changeCSRFToken(token);   // update CSRF token after rotation
 ```
 
 ### Auth flow
@@ -59,8 +64,9 @@ changeCSRFToken(token);   // update CSRF token after rotation
 ```
 App loads
   → CheckAuth calls useGetAuthQuery()
-      → Success: login(data) dispatched → auth = 'AUTHENTICATED'
-      → Failure: logout() dispatched → auth = 'NOT_AUTHENTICATED'
+      → Success: authActions.login(data) → store updates → auth = true
+      → Failure: authActions.logout()    → store updates → auth = false
+  → useSyncExternalStore notifies all subscribers
   → Router renders Authenticated or NotAuthenticated wrapper
 ```
 
@@ -145,15 +151,11 @@ This means individual query hooks don't need to handle these two cases themselve
 
 ### Query tags
 
-Cache keys are centralised in `src/store/tags.ts`:
+Cache keys are defined inline per query file. Always use a consistent key shape so cache invalidation stays predictable:
 
 ```ts
-import { tags } from '~/store';
-
-tags.Auth // ['auth']
+queryKey: ['auth']
 ```
-
-Always use tags for query keys so cache invalidation stays consistent.
 
 ### Auth queries
 

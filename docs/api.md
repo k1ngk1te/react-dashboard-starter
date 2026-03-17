@@ -147,7 +147,7 @@ All state-mutating endpoints (`POST /api/auth/login/` and `POST /api/auth/logout
 
 1. On the first request to `/api/health/` or `/api/auth/user/`, the server generates a CSRF token using `crypto.randomBytes(32)`
 2. The token is stored in an `httpOnly` cookie and also returned in the `X-Csrf-Token` response header
-3. The client reads the token from the response header (not the cookie, since it's `httpOnly`) and stores it in `AuthContext`
+3. The client reads the token from the response header (not the cookie, since it's `httpOnly`) and stores it in `authStore` via `authActions.changeCSRFToken`
 4. On every mutating request, the client sends the token back in the `X-Csrf-Token` request header
 5. The server compares the header value against the cookie value — if they don't match, the request is rejected with `403`
 

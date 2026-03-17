@@ -28,8 +28,8 @@ Three protection wrappers live in `src/layout/protections/`:
 Runs once on app load. Calls `useGetAuthQuery()` to check if the user has a valid session.
 
 - While loading: renders `<SplashScreen />`
-- On success: stores the user in `AuthContext` and renders children
-- On failure: stores logout state in `AuthContext` and renders children
+- On success: calls `authActions.login(data)` to update `authStore` and renders children
+- On failure: calls `authActions.logout()` to update `authStore` and renders children
 
 All other route guards depend on the auth state set by `CheckAuth`.
 
@@ -39,7 +39,7 @@ Wraps routes that require a logged-in user.
 
 - If authenticated: renders the dashboard layout with children
 - If not authenticated: lazy-loads and renders the login page
-- While auth state is loading: renders `<SplashScreen />`
+- While `authStore.loading` is true: renders `<SplashScreen />`
 
 ### `NotAuthenticated`
 
