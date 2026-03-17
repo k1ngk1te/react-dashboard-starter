@@ -1,4 +1,5 @@
 import { CSRF_TOKEN } from '~/config';
+import authStore from '~/store/listeners/auth';
 import type {
   LoginRequestDataType,
   LoginResponseType,
@@ -22,6 +23,7 @@ export abstract class BaseAuthRepository implements IAuthRepository {
     const newCsrfToken = getResponseHeader(response.headers, CSRF_TOKEN) || '';
     if (!newCsrfToken) throw new AppError(500, 'Unable to refresh CSRF token');
     HttpInstance.csrf(newCsrfToken);
+    authStore.set({ csrfToken: newCsrfToken });
     return newCsrfToken;
   }
 
