@@ -14,6 +14,7 @@ A full inventory of what's included in this starter.
 - Automatic CSRF token update on `ERROR_CSRF_100` responses
 - Route-level protection via `Authenticated` and `NotAuthenticated` wrappers
 - Session verification on app load via `CheckAuth`
+- Repository pattern for swappable data sources — mock for demos, real API for production (controlled via `VITE_USE_MOCK`)
 
 ---
 
@@ -157,6 +158,36 @@ All components are wrappers around Ant Design that apply consistent styling and 
 | `formatPrice` | Format a number as Nigerian Naira (NGN) |
 | `numberShortener` | Shorten large numbers (K, M, B, T) |
 | Date utilities | `getDate`, `formatDate`, `getStringedDate`, `getOffsetDate`, and more (via Dayjs) |
+
+---
+
+## Repository Pattern
+
+Services use a repository abstraction to decouple the data source from the rest of the app. Two implementations exist per resource:
+
+| Repository | Behaviour |
+|---|---|
+| `MockRepository` | Returns hardcoded local data — no external API required. Used for demos and early development. |
+| `ApiRepository` | Makes real HTTP calls to the external backend. Activated when the backend is ready. |
+
+A factory in `src/server/repositories/<resource>/index.ts` picks the active implementation based on `VITE_USE_MOCK`:
+
+```ts
+export const AuthRepository = USE_MOCK ? new MockAuthRepository() : new ApiAuthRepository();
+```
+
+Services (`src/server/services/`) delegate entirely to the repository, so queries and components are never aware of which implementation is running.
+
+**Switching to the real backend:**
+1. Set `VITE_USE_MOCK=0` in `.env`
+2. Set `VITE_API_URL` to your backend base URL
+3. Update the serializer (`src/server/serializers/`) if the API response shape differs from `ApiLoginResponseType`
+
+**Adding a repository for a new resource:**
+1. Create `src/server/repositories/<resource>/<resource>.type.ts` — define the contract
+2. Create `mock.repository.ts` and `api.repository.ts` implementing it
+3. Create `index.ts` — export the active implementation via the factory
+4. Slim the service down to delegate to the repository
 
 ---
 

@@ -11,7 +11,9 @@ import { z } from 'zod';
 
 dotenv.config();
 
-export const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',');
+const ENV_ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS;
+export const ALLOWED_ORIGINS =
+  !ENV_ALLOWED_ORIGINS || ENV_ALLOWED_ORIGINS === '*' ? [] : ENV_ALLOWED_ORIGINS.split(',');
 export const API_AUTH_LIMITER_EXPIRES =
   process.env.API_AUTH_LIMITER_EXPIRES && !isNaN(+process.env.API_AUTH_LIMITER_EXPIRES)
     ? +process.env.API_AUTH_LIMITER_EXPIRES
@@ -78,13 +80,14 @@ const corsOptions: cors.CorsOptions = {
     // Allow requests with no origin (like mobile apps or curl)
     if (!origin || ALLOWED_ORIGINS.length === 0) return callback(null, true);
     // Allow if the origin is in our allowed list
-    if (!ALLOWED_ORIGINS.includes(origin)) {
-      return callback(new Error('The CORS policy for this site does not allow access from the specified Origin.'), false);
+    if (ALLOWED_ORIGINS.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
     }
     return callback(null, true);
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Specify allowed methods
+  credentials: true, // This is crucial for sending cookies and custom headers
 };
 
 baseRouter.use(cors(corsOptions));
@@ -144,10 +147,13 @@ baseRouter.get('/api/auth/user/', authLimiter, authUserController);
 
 // Schema for the login credentials coming from your React frontend
 export const loginRequestSchema = z.object({
-  credentials: z.object({
-    token: z.string({ message: 'Token is required' }),
-    user: z.record(z.string(), z.unknown(), { message: 'User object is required.' }),
-  }, { message: 'Credentials are required.' }),
+  credentials: z.object(
+    {
+      token: z.string({ message: 'Token is required' }),
+      user: z.record(z.string(), z.unknown(), { message: 'User object is required.' }),
+    },
+    { message: 'Credentials are required.' },
+  ),
 });
 
 // ********** Validators Stop *************
@@ -172,8 +178,7 @@ export async function healthController(_req: Request, res: Response): Promise<vo
   } catch (error) {
     res.status(500).json({
       status: 'error',
-      message:
-        TEST_MODE && error instanceof Error ? error.message : 'Something went wrong on the client server.',
+      message: TEST_MODE && error instanceof Error ? error.message : 'Something went wrong on the client server.',
     });
   }
 }
@@ -204,8 +209,7 @@ export async function loginController(req: Request, res: Response): Promise<void
     }
     res.status(500).json({
       status: 'error',
-      message:
-        TEST_MODE && error instanceof Error ? error.message : 'Something went wrong on the client server.',
+      message: TEST_MODE && error instanceof Error ? error.message : 'Something went wrong on the client server.',
     });
   }
 }
@@ -301,7 +305,7 @@ export function verifyCSRFTokenMiddleware(req: Request, res: Response, next: Nex
       res.status(403).json({
         errorCode: ERROR_CODES.ERROR_CSRF_100.code,
         status: 'error',
-        message: ERROR_CODES.ERROR_CSRF_100.message + 'CSRF Token is not valid.',
+        message: ERROR_CODES.ERROR_CSRF_100.message + ' CSRF Token is not valid.',
       });
       return;
     }

@@ -213,5 +213,6 @@ type ApiPaginatedResponse<T> = {
 2. Apply the appropriate rate limiter middleware (`authLimiter` or `apiLimiter`)
 3. Add `verifyCSRFTokenMiddleware` to any state-mutating routes
 4. Add the URL constant to `src/server/config/api-routes.ts`
-5. Create a service function in `src/server/services/`
-6. Create a React Query hook in `src/store/queries/`
+5. Create a repository for the resource in `src/server/repositories/<resource>/` — define the interface, mock implementation, and API implementation
+6. Create a service in `src/server/services/` that delegates to the repository
+7. Create a React Query hook in `src/store/queries/`

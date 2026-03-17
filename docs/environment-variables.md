@@ -24,7 +24,7 @@ These are read exclusively by the Express server (`server/base.ts`, `server/inde
 
 | Variable | Default | Description |
 |---|---|---|
-| `ALLOWED_ORIGINS` | _(empty)_ | Comma-separated list of origins allowed by CORS. If empty, all origins are allowed. Example: `http://localhost:3000,https://yourdomain.com` |
+| `ALLOWED_ORIGINS` | _(empty)_ | Comma-separated list of origins allowed by CORS. Set to `*` to explicitly allow all origins. If empty or `*`, all origins are allowed — **restrict this in production**. Example: `http://localhost:3000,https://yourdomain.com` |
 
 ### Rate Limiting
 
@@ -48,6 +48,7 @@ These are read exclusively by the Express server (`server/base.ts`, `server/inde
 
 | Variable | Default | Description |
 |---|---|---|
+| `SERVER_TARGET_URL` | _(unset)_ | Full URL of the Express server used as the Vite dev proxy target. If unset, falls back to `http://localhost:{SERVER_TARGET_PORT}`. |
 | `TEST_MODE` | `0` | Set to `1` to enable debug output (e.g. exposes raw error messages in API responses, logs `req.ip` in health endpoint). Disable in production. |
 
 ---
@@ -59,6 +60,10 @@ These are read by Vite at build time and embedded into the frontend bundle.
 | Variable | Default | Description |
 |---|---|---|
 | `PORT` | `3000` | Port the Vite dev server runs on. |
+| `VITE_CSRF_TOKEN` | `X-Csrf-Token` | CSRF header name used by the frontend. Must match the server-side `CSRF_TOKEN` value. |
+| `VITE_TEST_MODE` | `0` | Set to `1` to enable client-side debug output. Mirrors the server-side `TEST_MODE`. Disable in production. |
+| `VITE_USE_MOCK` | `1` | Set to `1` to use the mock repository (hardcoded data, no external API). Set to `0` to use the real API repository. |
+| `VITE_API_URL` | _(unset)_ | Base URL of the external backend API. Required when `VITE_USE_MOCK=0`. Example: `https://api.yourdomain.com` |
 
 ---
 
@@ -83,13 +88,22 @@ API_DEFAULT_LIMITER_MAX=10
 
 # Server
 NODE_ENV=development
-SERVER_TARGET_PORT=5000
 TRUST_PROXY=0
 PREVENT_CACHE_ON_GET_AUTH_USER=1
 
 # Dev
 PORT=3000
+SERVER_TARGET_PORT=5000
+# SERVER_TARGET_URL=http://localhost:5000  # optional override for Vite proxy target
 TEST_MODE=1
+
+# Client
+VITE_CSRF_TOKEN=X-Csrf-Token
+VITE_TEST_MODE=1
+
+# Mock / API toggle
+VITE_USE_MOCK=1
+# VITE_API_URL=https://api.yourdomain.com  # required when VITE_USE_MOCK=0
 ```
 
 ---
@@ -100,6 +114,6 @@ TEST_MODE=1
 - `AUTH_KEY` — set to a custom cookie name
 - `NODE_ENV=production` — enables secure cookies and startup env validation
 - `TEST_MODE=0` — disables raw error messages in API responses
-- `ALLOWED_ORIGINS` — restrict to your production domain(s)
+- `ALLOWED_ORIGINS` — restrict to your production domain(s). If unset or `*`, all origins are allowed
 - `TRUST_PROXY=1` — if running behind a reverse proxy
 - `PREVENT_CACHE_ON_GET_AUTH_USER=1` — if deploying to Netlify

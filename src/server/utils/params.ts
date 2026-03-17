@@ -24,9 +24,9 @@ export function createSearchUrl(url: string, params?: Record<string, string | nu
 }
 
 export function getPaginationParamsFromResult(
-  response: ApiPaginatedResponseType<any>,
-  filters?: QueryListOptionsType
-): Omit<PaginatedResponseType<any>['data'], 'result'> {
+  response: ApiPaginatedResponseType<unknown>,
+  filters?: QueryListOptionsType,
+): Omit<PaginatedResponseType<unknown>['data'], 'result'> {
   let currentPage: number | undefined = undefined;
 
   // check if the current page, the client passes is valid
