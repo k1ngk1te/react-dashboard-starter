@@ -38,7 +38,6 @@
 .ant-picker-time-panel-cell.ant-picker-time-panel-cell-selected .ant-picker-time-panel-cell-inner {
   @apply !text-white;
 
-  background-color: var(--secondary-color) !important;
   height: 26px !important;
   padding-inline-start: 0px !important;
   text-align: center;

@@ -79,43 +79,14 @@ ul {
   color: var(--primary-color);
 }
 
-.secondary-text-color {
-  color: var(--secondary-color);
-}
-
-.tertiary-dark-text-color {
-  color: var(--tertiary-dark-color);
-}
-
-.tertiary-text-color {
-  color: var(--tertiary-color);
-}
-
-.gray-border-color {
-  border-color: var(--gray-border-color);
-}
-
-.dark-text-color {
-  color: var(--dark-text-color);
-}
-
 .container-wrapper {
   @apply h-full max-w-[800px] mx-auto p-4 w-full lg:py-8 lg:mt-[4.85rem];
 }
 
 /* Form Styling Start */
 
-.helptext-bg-color {
-  background-color: var(--helptext-bg-color);
-}
-
-.helptext-color {
-  color: var(--helptext-color);
-}
-
 .form-field-label {
   @apply block mt-1 mb-1.5 text-xs sm:text-sm;
-  color: var(--secondary-color);
 }
 
 .form-field-item {
@@ -127,7 +98,6 @@ ul {
 /* Dropdown Button Start */
 
 .dropdown-item-button {
-  color: var(--secondary-color) !important;
   @apply !justify-start;
 }
 
@@ -141,7 +111,6 @@ ul {
 /* Table Styling Start */
 
 .table-tools-container {
-  border-color: var(--gray-border-color);
   @apply border-t border-solid border-0 p-4;
   /* @apply  dark:bg-gray-800 dark:border-gray-700 px-2 py-3; */
 }
@@ -156,44 +125,30 @@ ul {
   @apply divide-y divide-gray-200 min-w-full;
 }
 
-.table-data-color {
-  color: var(--table-data-color);
-}
-
-.table-container .table-icon-bg {
-  background-color: var(--table-icon-bg);
-}
-
 .table-container thead th {
   @apply sticky top-0 z-10;
   @apply bg-white;
-  border-color: var(--gray-border-color);
   @apply border border-x-0 border-solid;
 }
 
 .table-container > table thead {
   @apply bg-white;
-  border-color: var(--gray-border-color);
   @apply border border-x-0 border-solid;
 }
 
 .table-container .table-head {
-  color: var(--table-data-color);
   @apply font-normal px-2 py-3 text-left text-sm tracking-wider;
 }
 
 .table-container .table-data {
-  color: var(--table-data-color);
   @apply leading-6 max-w-[17rem] min-w-[5rem] px-2 py-3 whitespace-break-spaces text-sm;
 }
 
 .table-container .table-data-sn {
-  color: var(--table-data-color);
   @apply w-2 text-center text-sm;
 }
 
 .table-container .table-footer-data {
-  color: var(--table-data-color);
   @apply capitalize px-2 py-4 text-sm;
 }
 
@@ -214,8 +169,6 @@ ul {
 }
 
 .table-avatar-title-sub-cell-image-placeholder {
-  background-color: var(--grayscale-color);
-  color: var(--dark-color);
   @apply h-10 inline-flex items-center justify-center rounded-lg w-10;
 }
 
@@ -233,13 +186,11 @@ ul {
 }
 
 .table-avatar-title-sub-cell-title .title {
-  color: var(--dark-text-color);
   @apply leading-6 mb-0.5 text-sm font-medium whitespace-break-spaces;
   word-wrap: break-word;
 }
 
 .table-avatar-title-sub-cell-title .subtitle {
-  color: var(--secondary-color);
   @apply leading-5 m-0 normal-case font-normal whitespace-break-spaces text-sm;
   word-wrap: break-word;
 }
