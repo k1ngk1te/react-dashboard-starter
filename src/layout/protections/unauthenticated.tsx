@@ -1,7 +1,7 @@
 import { Navigate } from 'react-router-dom';
 
 import { DASHBOARD_PAGE } from '~/config/routes';
-import { useAuthContext } from '~/store/contexts/auth';
+import { useAuthContext } from '~/store/contexts/auth/context';
 
 export default function NotAuthenticated({ children }: { children: React.ReactNode }) {
   const { auth: isAuthenticated, loading: isLoading } = useAuthContext();
