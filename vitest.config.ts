@@ -10,9 +10,11 @@ export default defineConfig({
     },
   },
   test: {
+    pool: 'forks',
     env: {
       API_DEFAULT_LIMITER_MAX: '10000',
       API_AUTH_LIMITER_MAX: '10000',
+      DISABLE_CSRF: '0',
     },
     environmentMatchGlobs: [
       ['tests/server/**', 'node'],

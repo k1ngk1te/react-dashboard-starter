@@ -2,8 +2,8 @@ import type { LoginRequestDataType, LoginResponseType, LogoutResponseType } from
 
 export interface IAuthRepository {
   getAuth(): Promise<LoginResponseType>;
-  login(params: { csrfToken: string; data: LoginRequestDataType }): Promise<LoginResponseType>;
-  logout(params: { csrfToken: string; token: string }): Promise<LogoutResponseType>;
+  login(params: { csrfToken?: string | null; data: LoginRequestDataType }): Promise<LoginResponseType>;
+  logout(params: { csrfToken?: string | null; token: string }): Promise<LogoutResponseType>;
   refreshUrl?: string;
   refreshAccessToken?(refreshToken: string): Promise<{ token: string; refreshToken?: string }>;
 }

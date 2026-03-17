@@ -10,7 +10,7 @@ export class MockAuthRepository extends BaseAuthRepository {
     return this.getCredentials();
   }
 
-  async login({ csrfToken, data }: { csrfToken: string; data: LoginRequestDataType }): Promise<LoginResponseType> {
+  async login({ csrfToken, data }: { csrfToken?: string | null; data: LoginRequestDataType }): Promise<LoginResponseType> {
     const credentials = AuthSerializer.serializeLogin({
       token: 'token',
       data: {
@@ -48,7 +48,7 @@ export class MockAuthRepository extends BaseAuthRepository {
     return NewSuccessDataResponse(result.data);
   }
 
-  async logout(params: { csrfToken: string; token: string }): Promise<LogoutResponseType> {
+  async logout(params: { csrfToken?: string | null; token: string }): Promise<LogoutResponseType> {
     return this.removeCredentials(params);
   }
 }

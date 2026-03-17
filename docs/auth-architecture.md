@@ -208,8 +208,8 @@ The auth data layer is abstracted behind `IAuthRepository` (`src/server/reposito
 ```ts
 interface IAuthRepository {
   getAuth(): Promise<LoginResponseType>;
-  login(params): Promise<LoginResponseType>;
-  logout(params): Promise<LogoutResponseType>;
+  login(params: { csrfToken?: string | null; data: LoginRequestDataType }): Promise<LoginResponseType>;
+  logout(params: { csrfToken?: string | null; token: string }): Promise<LogoutResponseType>;
   refreshAccessToken?(refreshToken: string): Promise<{ token: string; refreshToken?: string }>;
   refreshUrl?: string;
 }
@@ -229,8 +229,8 @@ The **base class** (`BaseAuthRepository`) holds shared credential operations:
 | Method | What it does |
 |---|---|
 | `getCredentials()` | Calls `GET /api/auth/user/` — reads JWT from cookie, returns user + CSRF token |
-| `saveCredentials(csrf, data)` | Calls `POST /api/auth/login/` — stores JWT in httpOnly cookie |
-| `removeCredentials({ csrf, token })` | Calls `POST /api/auth/logout/` — clears httpOnly cookie |
+| `saveCredentials(csrf?, data)` | Calls `POST /api/auth/login/` — stores JWT in httpOnly cookie. `csrf` defaults to `''` when CSRF is disabled. |
+| `removeCredentials({ csrf?, token })` | Calls `POST /api/auth/logout/` — clears httpOnly cookie. `csrf` defaults to `''` when CSRF is disabled. |
 | `refreshCsrfToken()` | Calls `GET /api/health/` — fetches a fresh CSRF token, updates `HttpInstance` headers and `authStore` |
 
 ---

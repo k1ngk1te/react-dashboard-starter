@@ -26,6 +26,10 @@ describe('CSRF disabled (DISABLE_CSRF=1)', () => {
     vi.stubEnv('DISABLE_CSRF', '1');
   });
 
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it('verifyCSRFTokenMiddleware passes through without any CSRF header or cookie', async () => {
     const { verifyCSRFTokenMiddleware, CSRF_TOKEN } = await importBase();
     const res = await request(createMiddlewareApp(verifyCSRFTokenMiddleware))
@@ -68,6 +72,10 @@ describe('CSRF enabled (DISABLE_CSRF unset)', () => {
   beforeEach(() => {
     vi.resetModules();
     vi.stubEnv('DISABLE_CSRF', '');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it('verifyCSRFTokenMiddleware still rejects mismatched tokens', async () => {

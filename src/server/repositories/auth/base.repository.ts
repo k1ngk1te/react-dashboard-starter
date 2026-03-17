@@ -14,8 +14,8 @@ import { getResponseHeader, NewSuccessDataResponse } from '../../utils/response'
 import type { IAuthRepository } from './auth.type';
 
 export abstract class BaseAuthRepository implements IAuthRepository {
-  abstract login(params: { csrfToken: string; data: LoginRequestDataType }): Promise<LoginResponseType>;
-  abstract logout(params: { csrfToken: string; token: string }): Promise<LogoutResponseType>;
+  abstract login(params: { csrfToken?: string | null; data: LoginRequestDataType }): Promise<LoginResponseType>;
+  abstract logout(params: { csrfToken?: string | null; token: string }): Promise<LogoutResponseType>;
   abstract getAuth(): Promise<LoginResponseType>;
 
   protected async refreshCsrfToken(): Promise<string> {
@@ -50,10 +50,10 @@ export abstract class BaseAuthRepository implements IAuthRepository {
   }
 
   protected async saveCredentials(
-    csrfToken: string,
+    csrfToken: string | null | undefined,
     credentials: ServerLoginResponseType['data'],
   ): Promise<LoginResponseType> {
-    const response = await HttpInstance.csrf(csrfToken).post<ServerLoginResponseType>(API_LOGIN_URL, {
+    const response = await HttpInstance.csrf(csrfToken ?? '').post<ServerLoginResponseType>(API_LOGIN_URL, {
       credentials,
     });
 
@@ -61,7 +61,7 @@ export abstract class BaseAuthRepository implements IAuthRepository {
     const newCsrfToken =
       typeof response.headers.get === 'function' ? response.headers.get(CSRF_TOKEN)?.toString() : undefined;
 
-    const result: LoginResponseType['data'] = { ...credentials, csrfToken: newCsrfToken || csrfToken };
+    const result: LoginResponseType['data'] = { ...credentials, csrfToken: newCsrfToken || csrfToken || '' };
     return NewSuccessDataResponse(result, responseData.message);
   }
 
@@ -69,11 +69,11 @@ export abstract class BaseAuthRepository implements IAuthRepository {
     csrfToken,
     token,
   }: {
-    csrfToken: string;
+    csrfToken?: string | null;
     token: string;
   }): Promise<LogoutResponseType> {
     try {
-      const response = await HttpInstance.login(token, csrfToken).post<AppResponseType>(API_LOGOUT_URL, {});
+      const response = await HttpInstance.login(token, csrfToken ?? '').post<AppResponseType>(API_LOGOUT_URL, {});
       const responseData = response.data;
       const newCsrfToken = getResponseHeader(response.headers, CSRF_TOKEN);
       const result: LogoutResponseType['data'] = { csrfToken: newCsrfToken };
