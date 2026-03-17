@@ -1,7 +1,7 @@
-import type { ResponseType } from '~/types';
+import type { AppResponseType } from '~/types';
 
-type MessageResponseType = Omit<ResponseType, 'status'> & { status: 'success' };
-type DataResponseType<T> = Omit<ResponseType, 'status' | 'data'> & { status: 'success'; data: T };
+type MessageResponseType = Omit<AppResponseType, 'status'> & { status: 'success' };
+type DataResponseType<T> = Omit<AppResponseType, 'status' | 'data'> & { status: 'success'; data: T };
 
 export function getResponseHeader(headers: unknown, name: string): string | undefined {
   if (!headers || typeof headers !== 'object') return undefined;

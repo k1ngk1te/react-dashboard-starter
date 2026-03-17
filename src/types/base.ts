@@ -1,6 +1,6 @@
 import type { FormRule as AntdFormRule } from 'antd';
 
-export type ResponseType<DataType = undefined> = DataType extends void
+export type AppResponseType<DataType = undefined> = DataType extends void
   ? {
       message: string;
       errorCode?: string;
@@ -14,14 +14,14 @@ export type ResponseType<DataType = undefined> = DataType extends void
       data: DataType;
     };
 
-export type ResponseErrorType<DataType = undefined> = {
+export type AppResponseErrorType<DataType = undefined> = {
   message: string;
   errorCode?: string;
   status: 'error' | 'success' | number;
   data?: DataType;
 };
 
-export type PaginatedResponseType<T> = ResponseType<{
+export type AppPaginatedResponseType<T> = AppResponseType<{
   totalPages: number;
   currentPage: number;
   totalRecords: number; // total records
@@ -39,8 +39,8 @@ export type QueryListOptionsType = {
 };
 
 export type MutationOptionsType<T = void, U = void> = {
-  onSuccess: T extends void ? (data: Omit<ResponseType, 'data'>) => void : (data: ResponseType<T>) => void;
-  onError?: U extends void ? (err: ResponseErrorType) => void : (err: ResponseErrorType<U>) => void;
+  onSuccess: T extends void ? (data: Omit<AppResponseType, 'data'>) => void : (data: AppResponseType<T>) => void;
+  onError?: U extends void ? (err: AppResponseErrorType) => void : (err: AppResponseErrorType<U>) => void;
 };
 
 export type GetValidatorErrorType<T> = {

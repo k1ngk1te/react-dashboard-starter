@@ -3,7 +3,7 @@ import { AxiosError } from 'axios';
 import AppError from './app-error';
 
 import { TEST_MODE } from '~/config';
-import type { ResponseType } from '~/types';
+import type { AppResponseType } from '~/types';
 
 export { AppError };
 
@@ -100,10 +100,10 @@ export function handleAppErrors<T = any>(
   return undefined;
 }
 
-export function isResponseWithMessage(response: unknown): response is ResponseType {
+export function isResponseWithMessage(response: unknown): response is AppResponseType {
   return response !== null && response !== undefined && (response as any)?.message !== undefined;
 }
 
-export function isResponseWithData<DataType = unknown>(response: unknown): response is ResponseType<DataType> {
+export function isResponseWithData<DataType = unknown>(response: unknown): response is AppResponseType<DataType> {
   return response !== null && response !== undefined && (response as any)?.data !== undefined;
 }

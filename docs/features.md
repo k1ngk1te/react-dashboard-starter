@@ -195,6 +195,6 @@ Services (`src/server/services/`) delegate entirely to the repository, so querie
 
 - Strict mode enabled across all configs
 - `noUnusedLocals` and `noUnusedParameters` enforced
-- Shared generic types: `ResponseType<T>`, `PaginatedResponseType<T>`, `MutationOptionsType<T, U>`
+- Shared generic types: `AppResponseType<T>`, `AppPaginatedResponseType<T>`, `AppResponseErrorType<T>`, `MutationOptionsType<T, U>`
 - Separate tsconfig files for app, node (vite config), and server
 - Server compiled to plain JS via `tsconfig.server.build.json`

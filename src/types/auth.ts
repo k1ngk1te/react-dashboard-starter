@@ -1,4 +1,4 @@
-import type { ResponseType } from './base';
+import type { AppResponseType } from './base';
 
 export type AuthDataType = {
   id: number;
@@ -16,21 +16,21 @@ export type LoginRequestDataType = {
   email: string;
   password: string;
 };
-export type LoginResponseType = ResponseType<{
+export type LoginResponseType = AppResponseType<{
   csrfToken: string;
   token: string;
   user: AuthDataType;
 }>;
-export type LogoutResponseType = ResponseType<{
+export type LogoutResponseType = AppResponseType<{
   csrfToken?: string;
 }>;
-export type ServerLoginResponseType = ResponseType<{
+export type ServerLoginResponseType = AppResponseType<{
   token: string;
   user: AuthDataType;
 }>;
 
 export type VerifyLoginRequestDataType = { otp: string };
-export type VerifyLoginResponseDataType = ResponseType<AuthDataType>;
+export type VerifyLoginResponseDataType = AppResponseType<AuthDataType>;
 
 export type ResetPasswordRequestDataType = { email: string };
 

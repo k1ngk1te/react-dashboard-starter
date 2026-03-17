@@ -3,7 +3,7 @@ import type {
   LoginRequestDataType,
   LoginResponseType,
   LogoutResponseType,
-  ResponseType,
+  AppResponseType,
   ServerLoginResponseType,
 } from '~/types';
 import { AppError, handleAllErrors } from '~/utils/errors';
@@ -18,7 +18,7 @@ export abstract class BaseAuthRepository implements IAuthRepository {
   abstract getAuth(): Promise<LoginResponseType>;
 
   protected async refreshCsrfToken(): Promise<string> {
-    const response = await HttpInstance.current().get<ResponseType>(API_HEALTH_URL);
+    const response = await HttpInstance.current().get<AppResponseType>(API_HEALTH_URL);
     const newCsrfToken = getResponseHeader(response.headers, CSRF_TOKEN) || '';
     if (!newCsrfToken) throw new AppError(500, 'Unable to refresh CSRF token');
     HttpInstance.csrf(newCsrfToken);
@@ -71,7 +71,7 @@ export abstract class BaseAuthRepository implements IAuthRepository {
     token: string;
   }): Promise<LogoutResponseType> {
     try {
-      const response = await HttpInstance.login(token, csrfToken).post<ResponseType>(API_LOGOUT_URL, {});
+      const response = await HttpInstance.login(token, csrfToken).post<AppResponseType>(API_LOGOUT_URL, {});
       const responseData = response.data;
       const newCsrfToken = getResponseHeader(response.headers, CSRF_TOKEN);
       const result: LogoutResponseType['data'] = { csrfToken: newCsrfToken };

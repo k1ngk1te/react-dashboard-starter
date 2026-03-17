@@ -1,4 +1,4 @@
-import type { PaginatedResponseType, QueryListOptionsType } from '~/types';
+import type { AppPaginatedResponseType, QueryListOptionsType } from '~/types';
 import { formatDate } from '~/utils';
 import type { ApiPaginatedResponseType } from '../types';
 
@@ -26,7 +26,7 @@ export function createSearchUrl(url: string, params?: Record<string, string | nu
 export function getPaginationParamsFromResult(
   response: ApiPaginatedResponseType<unknown>,
   filters?: QueryListOptionsType,
-): Omit<PaginatedResponseType<unknown>['data'], 'result'> {
+): Omit<AppPaginatedResponseType<unknown>['data'], 'result'> {
   let currentPage: number | undefined = undefined;
 
   // check if the current page, the client passes is valid
