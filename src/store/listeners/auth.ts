@@ -1,5 +1,6 @@
 import type { AuthDataType } from '~/types';
 import { AppError } from '~/utils/errors';
+import { DISABLE_CSRF } from '~/config/app';
 
 export type RefreshHandler = (refreshToken: string) => Promise<{ token: string; refreshToken?: string }>;
 
@@ -14,7 +15,7 @@ export type AuthStoreDataType = {
 export type UserStoreDataType = {
   data: AuthDataType;
   token: string;
-  csrfToken: string;
+  csrfToken: string | null;
   refreshToken: string | null;
   loading: boolean;
 };
@@ -37,7 +38,7 @@ const authStore = {
 
   getUser: (): UserStoreDataType => {
     const { data, token, csrfToken, ...otherStates } = currentState;
-    if (!data || !token || !csrfToken) throw new AppError(401);
+    if (!data || !token || (!DISABLE_CSRF && !csrfToken)) throw new AppError(401);
     return { ...otherStates, data, token, csrfToken };
   },
 

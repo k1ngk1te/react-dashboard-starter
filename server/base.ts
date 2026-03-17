@@ -42,6 +42,7 @@ export const JWT_EXPIRES =
   process.env.JWT_EXPIRES && !isNaN(+process.env.JWT_EXPIRES) ? +process.env.JWT_EXPIRES : 14400;
 export const PREVENT_CACHE_ON_GET_AUTH_USER = process.env.PREVENT_CACHE_ON_GET_AUTH_USER !== '0';
 export const TEST_MODE = process.env.TEST_MODE === '1';
+export const DISABLE_CSRF = process.env.DISABLE_CSRF === '1';
 
 // ****** ENVS Stop *********
 
@@ -52,6 +53,9 @@ export function validateEnv(): void {
   const missing = required.filter((key) => !process.env[key]);
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+  }
+  if (DISABLE_CSRF && NODE_ENV === 'production') {
+    throw new Error('DISABLE_CSRF cannot be enabled in production.');
   }
 }
 
@@ -165,10 +169,11 @@ export async function healthController(_req: Request, res: Response): Promise<vo
   try {
     const cookies = cookie.parse(_req.headers.cookie || '');
 
-    // Add CSRF_TOKEN IF NOT PRESENT
-    const csrfToken = cookies[CSRF_TOKEN];
-    if (!csrfToken) generateCsrfTokenInResponse(res);
-    else res.setHeader(CSRF_TOKEN, csrfToken);
+    if (!DISABLE_CSRF) {
+      const csrfToken = cookies[CSRF_TOKEN];
+      if (!csrfToken) generateCsrfTokenInResponse(res);
+      else res.setHeader(CSRF_TOKEN, csrfToken);
+    }
 
     res.status(200).json({
       status: 'success',
@@ -242,10 +247,12 @@ export async function authUserController(req: Request, res: Response): Promise<v
     const cookies = cookie.parse(req.headers.cookie || '');
     const token = cookies[AUTH_KEY];
 
-    // Add CSRF_TOKEN IF NOT PRESENT
-    const csrfToken = cookies[CSRF_TOKEN];
-    if (!csrfToken) generateCsrfTokenInResponse(res);
-    else res.setHeader(CSRF_TOKEN, csrfToken);
+    let csrfToken = '';
+    if (!DISABLE_CSRF) {
+      csrfToken = cookies[CSRF_TOKEN] ?? '';
+      if (!csrfToken) generateCsrfTokenInResponse(res);
+      else res.setHeader(CSRF_TOKEN, csrfToken);
+    }
 
     if (token) {
       const decoded = jwt.verify(token, SECRET_KEY) as JwtPayloadDecoded;
@@ -283,6 +290,7 @@ export async function authUserController(req: Request, res: Response): Promise<v
 
 // verify CSRF_TOKEN middleware
 export function verifyCSRFTokenMiddleware(req: Request, res: Response, next: NextFunction): void {
+  if (DISABLE_CSRF) { next(); return; }
   try {
     // Get the token from the cookies
     const cookies = cookie.parse(req.headers.cookie || '');

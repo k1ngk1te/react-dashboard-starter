@@ -1,4 +1,4 @@
-import { CSRF_TOKEN } from '~/config';
+import { CSRF_TOKEN, DISABLE_CSRF } from '~/config';
 import authStore from '~/store/listeners/auth';
 import type {
   LoginRequestDataType,
@@ -35,7 +35,7 @@ export abstract class BaseAuthRepository implements IAuthRepository {
     if (!csrfToken) csrfToken = getResponseHeader(response.headers, CSRF_TOKEN) || '';
 
     const BROWSER_REFRESHED_KEY = 'browser_refreshed';
-    if (!csrfToken) {
+    if (!csrfToken && !DISABLE_CSRF) {
       if (sessionStorage.getItem(BROWSER_REFRESHED_KEY)) {
         throw new AppError(400, 'CSRF TOKEN was not provided');
       }
