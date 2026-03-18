@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import request from 'supertest';
 import jwt from 'jsonwebtoken';
-import { SECRET_KEY, CSRF_TOKEN, AUTH_KEY } from '../../server/base';
+import { env } from '../../server/base';
 import { createApp, getCsrfCredentials } from './_helpers';
 
 // ─── Health ──────────────────────────────────────────────────────────────────
@@ -17,15 +17,15 @@ describe('GET /api/health/', () => {
   it('sets a CSRF token cookie when none is present', async () => {
     const res = await request(createApp()).get('/api/health/');
     const cookies = res.headers['set-cookie'] as string[];
-    expect(cookies?.some((c) => c.startsWith(CSRF_TOKEN))).toBe(true);
-    expect(res.headers[CSRF_TOKEN.toLowerCase()]).toBeDefined();
+    expect(cookies?.some((c) => c.startsWith(env.CSRF_TOKEN))).toBe(true);
+    expect(res.headers[env.CSRF_TOKEN.toLowerCase()]).toBeDefined();
   });
 
   it('returns the existing CSRF token when cookie is already present', async () => {
     const app = createApp();
     const { csrfValue, cookieHeader } = await getCsrfCredentials(app);
     const res = await request(app).get('/api/health/').set('Cookie', cookieHeader);
-    expect(res.headers[CSRF_TOKEN.toLowerCase()]).toBe(csrfValue);
+    expect(res.headers[env.CSRF_TOKEN.toLowerCase()]).toBe(csrfValue);
   });
 });
 
@@ -39,13 +39,13 @@ describe('POST /api/auth/login/', () => {
     const res = await request(app)
       .post('/api/auth/login/')
       .set('Cookie', cookieHeader)
-      .set(CSRF_TOKEN, csrfValue)
+      .set(env.CSRF_TOKEN, csrfValue)
       .send({ credentials: { token: 'test-token', user: { id: 1 } } });
 
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('success');
     const cookies = res.headers['set-cookie'] as string[];
-    expect(cookies?.some((c) => c.startsWith(AUTH_KEY))).toBe(true);
+    expect(cookies?.some((c) => c.startsWith(env.AUTH_KEY))).toBe(true);
   });
 
   it('returns 400 when token is missing from credentials', async () => {
@@ -55,7 +55,7 @@ describe('POST /api/auth/login/', () => {
     const res = await request(app)
       .post('/api/auth/login/')
       .set('Cookie', cookieHeader)
-      .set(CSRF_TOKEN, csrfValue)
+      .set(env.CSRF_TOKEN, csrfValue)
       .send({ credentials: { user: { id: 1 } } });
 
     expect(res.status).toBe(400);
@@ -69,7 +69,7 @@ describe('POST /api/auth/login/', () => {
     const res = await request(app)
       .post('/api/auth/login/')
       .set('Cookie', cookieHeader)
-      .set(CSRF_TOKEN, csrfValue)
+      .set(env.CSRF_TOKEN, csrfValue)
       .send({});
 
     expect(res.status).toBe(400);
@@ -97,11 +97,9 @@ describe('GET /api/auth/user/', () => {
 
   it('returns 200 with user data when a valid JWT cookie is present', async () => {
     const payload = { token: 'test-token', user: { id: 1, email: 'test@test.com' } };
-    const token = jwt.sign(payload, SECRET_KEY, { expiresIn: 3600 });
+    const token = jwt.sign(payload, env.SECRET_KEY, { expiresIn: 3600 });
 
-    const res = await request(createApp())
-      .get('/api/auth/user/')
-      .set('Cookie', `${AUTH_KEY}=${token}`);
+    const res = await request(createApp()).get('/api/auth/user/').set('Cookie', `${env.AUTH_KEY}=${token}`);
 
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('success');
@@ -109,9 +107,7 @@ describe('GET /api/auth/user/', () => {
   });
 
   it('returns 500 when the JWT is invalid', async () => {
-    const res = await request(createApp())
-      .get('/api/auth/user/')
-      .set('Cookie', `${AUTH_KEY}=invalid.jwt.token`);
+    const res = await request(createApp()).get('/api/auth/user/').set('Cookie', `${env.AUTH_KEY}=invalid.jwt.token`);
 
     expect(res.status).toBe(500);
   });
@@ -124,15 +120,12 @@ describe('POST /api/auth/logout/', () => {
     const app = createApp();
     const { csrfValue, cookieHeader } = await getCsrfCredentials(app);
 
-    const res = await request(app)
-      .post('/api/auth/logout/')
-      .set('Cookie', cookieHeader)
-      .set(CSRF_TOKEN, csrfValue);
+    const res = await request(app).post('/api/auth/logout/').set('Cookie', cookieHeader).set(env.CSRF_TOKEN, csrfValue);
 
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('success');
     const cookies = res.headers['set-cookie'] as string[];
-    const authCookie = cookies?.find((c) => c.startsWith(AUTH_KEY));
+    const authCookie = cookies?.find((c) => c.startsWith(env.AUTH_KEY));
     expect(authCookie).toContain('Expires=Thu, 01 Jan 1970');
   });
 

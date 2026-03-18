@@ -6,31 +6,31 @@ const message405 = 'Method not allowed.';
 const message500 = 'A server error occurred! Please try again later.';
 
 class AppError extends Error {
-	message: string;
-	status: number = 500;
-	data;
+  message: string;
+  status: number = 500;
+  data;
 
-	constructor(status: number = 500, message?: string, data?: any) {
-		super(message);
-		Object.setPrototypeOf(this, AppError.prototype);
+  constructor(status: number = 500, message?: string, data?: unknown) {
+    super(message);
+    Object.setPrototypeOf(this, AppError.prototype);
 
-		this.name = 'AppError';
-		this.message = message
-			? message
-			: status === 400
-			? message400
-			: status === 401
-			? message401
-			: status === 403
-			? message403
-			: status === 404
-			? message404
-			: status === 405
-			? message405
-			: message500;
-		this.status = status;
-		this.data = data;
-	}
+    this.name = 'AppError';
+    this.message = message
+      ? message
+      : status === 400
+        ? message400
+        : status === 401
+          ? message401
+          : status === 403
+            ? message403
+            : status === 404
+              ? message404
+              : status === 405
+                ? message405
+                : message500;
+    this.status = status;
+    this.data = data;
+  }
 }
 
 export default AppError;
