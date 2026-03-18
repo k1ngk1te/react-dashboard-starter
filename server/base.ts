@@ -28,7 +28,7 @@ const validateEnvSchema = z.object({
   CSRF_TOKEN_EXPIRES: z.coerce.number().optional(), // seconds, if undefined then it's session
   DISABLE_CSRF: z.coerce.number().optional().default(0).transform(Boolean),
   JWT_EXPIRES: z.coerce.number().optional().default(14400), // seconds
-  NODE_ENV: z.enum(['production', 'development']).optional().default('production'),
+  NODE_ENV: z.enum(['production', 'development', 'test']).optional().default('production'),
   PREVENT_CACHE_ON_GET_AUTH_USER: z.coerce.number().optional().default(1).transform(Boolean),
   SECRET_KEY: z.string(),
   TEST_MODE: z.coerce.number().optional().default(0).transform(Boolean),

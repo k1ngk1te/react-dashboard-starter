@@ -12,6 +12,8 @@ export default defineConfig({
   test: {
     pool: 'forks',
     env: {
+      SECRET_KEY: 'test-secret-key',
+      AUTH_KEY: 'test-auth-key',
       API_DEFAULT_LIMITER_MAX: '10000',
       API_AUTH_LIMITER_MAX: '10000',
       DISABLE_CSRF: '0',

@@ -47,9 +47,9 @@ vi.mock('~/store/listeners/auth', () => ({ default: mockAuthStore }));
 vi.mock('~/store/contexts/auth/context', () => ({ authActions: mockAuthActions }));
 vi.mock('~/config/app', () => ({ CSRF_TOKEN: 'X-Csrf-Token', APP_NAME: 'Test' }));
 
-// ─── Import HttpInstance after mocks are in place ─────────────────────────────
+// ─── Import httpClient after mocks are in place ────────────────────────────────
 
-const { default: HttpInstance } = await import('../../../src/utils/http');
+const { httpClient } = await import('../../../src/utils/http');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -68,11 +68,11 @@ function make401Error(url = '/api/protected') {
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
-describe('HttpInstance interceptor', () => {
+describe('httpClient interceptor', () => {
   let mock: MockAdapter;
 
   beforeEach(() => {
-    mock = new MockAdapter(HttpInstance.current());
+    mock = new MockAdapter(httpClient);
     vi.clearAllMocks();
     // Reset store state
     mockAuthStore._state = { data: null, token: 'access-token', csrfToken: 'csrf', refreshToken: null, loading: false };
@@ -105,7 +105,7 @@ describe('HttpInstance interceptor', () => {
     mockAuthStore._state.refreshToken = null;
     mock.onGet('/api/protected').reply(401);
 
-    await expect(HttpInstance.current().get('/api/protected')).rejects.toThrow();
+    await expect(httpClient.get('/api/protected')).rejects.toThrow();
     expect(mockAuthActions.logout).toHaveBeenCalledOnce();
   });
 
@@ -114,7 +114,7 @@ describe('HttpInstance interceptor', () => {
     mockAuthStore._refreshHandler = null;
     mock.onGet('/api/protected').reply(401);
 
-    await expect(HttpInstance.current().get('/api/protected')).rejects.toThrow();
+    await expect(httpClient.get('/api/protected')).rejects.toThrow();
     expect(mockAuthActions.logout).toHaveBeenCalledOnce();
   });
 
@@ -127,7 +127,7 @@ describe('HttpInstance interceptor', () => {
 
     mock.onGet('/api/protected').replyOnce(401).onGet('/api/protected').reply(200, { data: 'ok' });
 
-    const res = await HttpInstance.current().get('/api/protected');
+    const res = await httpClient.get('/api/protected');
     expect(handler).toHaveBeenCalledWith('rt-123');
     expect(mockAuthStore.set).toHaveBeenCalledWith(expect.objectContaining({ token: 'new-access-token' }));
     expect(res.data).toEqual({ data: 'ok' });
@@ -139,7 +139,7 @@ describe('HttpInstance interceptor', () => {
 
     mock.onGet('/api/protected').replyOnce(401).onGet('/api/protected').reply(200, {});
 
-    await HttpInstance.current().get('/api/protected');
+    await httpClient.get('/api/protected');
     expect(mockAuthStore.set).toHaveBeenCalledWith(expect.objectContaining({ refreshToken: 'rt-original' }));
   });
 
@@ -149,7 +149,7 @@ describe('HttpInstance interceptor', () => {
 
     mock.onGet('/api/protected').replyOnce(401).onGet('/api/protected').reply(200, {});
 
-    await HttpInstance.current().get('/api/protected');
+    await httpClient.get('/api/protected');
     expect(mockAuthStore.set).toHaveBeenCalledWith(expect.objectContaining({ refreshToken: 'rt-new' }));
   });
 
@@ -161,7 +161,7 @@ describe('HttpInstance interceptor', () => {
 
     mock.onGet('/api/protected').reply(401);
 
-    await expect(HttpInstance.current().get('/api/protected')).rejects.toThrow();
+    await expect(httpClient.get('/api/protected')).rejects.toThrow();
     expect(mockAuthActions.logout).toHaveBeenCalledOnce();
   });
 
@@ -174,7 +174,7 @@ describe('HttpInstance interceptor', () => {
 
     mock.onGet('/api/protected').reply(401);
 
-    await expect(HttpInstance.current().get('/api/protected')).rejects.toThrow();
+    await expect(httpClient.get('/api/protected')).rejects.toThrow();
     expect(handler).toHaveBeenCalledOnce();
   });
 
@@ -188,7 +188,7 @@ describe('HttpInstance interceptor', () => {
 
     mock.onPost('/external/auth/refresh').reply(401);
 
-    await expect(HttpInstance.current().post('/external/auth/refresh')).rejects.toThrow();
+    await expect(httpClient.post('/external/auth/refresh')).rejects.toThrow();
     expect(handler).not.toHaveBeenCalled();
     expect(mockAuthActions.logout).toHaveBeenCalledOnce();
   });
@@ -201,7 +201,7 @@ describe('HttpInstance interceptor', () => {
 
     mock.onGet('/api/protected').replyOnce(401).onGet('/api/protected').reply(200, {});
 
-    await HttpInstance.current().get('/api/protected');
+    await httpClient.get('/api/protected');
     expect(handler).toHaveBeenCalledOnce();
   });
 
@@ -215,7 +215,7 @@ describe('HttpInstance interceptor', () => {
     mock.onGet('/api/a').replyOnce(401).onGet('/api/a').reply(200, { route: 'a' });
     mock.onGet('/api/b').replyOnce(401).onGet('/api/b').reply(200, { route: 'b' });
 
-    const [a, b] = await Promise.all([HttpInstance.current().get('/api/a'), HttpInstance.current().get('/api/b')]);
+    const [a, b] = await Promise.all([httpClient.get('/api/a'), httpClient.get('/api/b')]);
 
     expect(handler).toHaveBeenCalledOnce();
     expect(a.data).toEqual({ route: 'a' });
@@ -227,7 +227,7 @@ describe('HttpInstance interceptor', () => {
   it('does not intercept non-401 errors', async () => {
     mock.onGet('/api/protected').reply(500, { message: 'Server error' });
 
-    await expect(HttpInstance.current().get('/api/protected')).rejects.toThrow();
+    await expect(httpClient.get('/api/protected')).rejects.toThrow();
     expect(mockAuthActions.logout).not.toHaveBeenCalled();
   });
 });
