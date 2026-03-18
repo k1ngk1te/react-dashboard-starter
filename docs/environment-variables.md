@@ -50,7 +50,7 @@ These are read exclusively by the Express server (`server/base.ts`, `server/inde
 |---|---|---|
 | `SERVER_TARGET_URL` | _(unset)_ | Full URL of the Express server used as the Vite dev proxy target. If unset, falls back to `http://localhost:{SERVER_TARGET_PORT}`. |
 | `TEST_MODE` | `0` | Set to `1` to enable debug output (e.g. exposes raw error messages in API responses, logs `req.ip` in health endpoint). Disable in production. |
-| `DISABLE_CSRF` | `0` | Set to `1` to disable CSRF token validation on the server. Useful during local development or demo mode. **Blocked in production — `validateEnv()` throws if this is set alongside `NODE_ENV=production`.** |
+| `DISABLE_CSRF` | `0` | Set to `1` to disable CSRF token validation on the server. Useful during local development or demo mode. **Do not enable in production.** |
 
 ---
 
@@ -123,4 +123,4 @@ VITE_USE_MOCK=1
 - `ALLOWED_ORIGINS` — restrict to your production domain(s). If unset or `*`, all origins are allowed
 - `TRUST_PROXY=1` — if running behind a reverse proxy
 - `PREVENT_CACHE_ON_GET_AUTH_USER=1` — if deploying to Netlify
-- `DISABLE_CSRF` — must not be set to `1` (enforced by `validateEnv()`)
+- `DISABLE_CSRF` — must not be set to `1`

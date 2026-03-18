@@ -1,22 +1,14 @@
 import express from 'express';
 import ServerlessHttp from 'serverless-http';
 
-import { NODE_ENV, validateEnv, router } from '../../server/base.js';
+import { env, router } from '../../server/base.js';
 
 const serverlessApp = express();
 
-// envs
-export const TRUST_PROXY =
-  process.env.TRUST_PROXY && !isNaN(+process.env.TRUST_PROXY) ? +process.env.TRUST_PROXY : 0;
-
-// ****** Env Validation ********
-if (NODE_ENV === 'production') {
-  validateEnv();
-}
 // ******************************
 
 // Rate Limiter
-serverlessApp.set('trust proxy', TRUST_PROXY);
+serverlessApp.set('trust proxy', env.TRUST_PROXY);
 
 // Middleware
 serverlessApp.use(express.json());

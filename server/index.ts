@@ -2,15 +2,8 @@ import express from 'express';
 import helmet from 'helmet';
 import path from 'path';
 
-import { NODE_ENV, validateEnv, router } from './base.js';
+import { env, router } from './base.js';
 
-export const TRUST_PROXY =
-  process.env.TRUST_PROXY && !isNaN(+process.env.TRUST_PROXY) ? +process.env.TRUST_PROXY : 0;
-
-// ****** Env Validation ********
-if (NODE_ENV === 'production') {
-  validateEnv();
-}
 // ******************************
 
 const app = express();
@@ -19,7 +12,7 @@ const app = express();
 app.use(helmet());
 
 // Rate Limiter
-app.set('trust proxy', TRUST_PROXY);
+app.set('trust proxy', env.TRUST_PROXY);
 
 // Middleware
 app.use(express.json());

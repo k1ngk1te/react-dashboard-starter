@@ -32,9 +32,10 @@ const validateEnvSchema = z.object({
   PREVENT_CACHE_ON_GET_AUTH_USER: z.coerce.number().optional().default(1).transform(Boolean),
   SECRET_KEY: z.string(),
   TEST_MODE: z.coerce.number().optional().default(0).transform(Boolean),
+  TRUST_PROXY: z.coerce.number().optional().default(0).transform(Boolean),
 });
 
-const env = validateEnvSchema.parse(process.env);
+export const env = validateEnvSchema.parse(process.env);
 
 // ****** ENVS Stop *********
 
