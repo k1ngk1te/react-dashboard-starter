@@ -18,7 +18,7 @@ export const authActions = {
   logout: (payload?: LogoutPayloadType) =>
     authStore.set({
       token: null,
-      csrfToken: (payload as { csrfToken?: string })?.csrfToken || authStore.get().csrfToken,
+      csrfToken: payload?.csrfToken || authStore.get().csrfToken,
       loading: false,
     }),
 
