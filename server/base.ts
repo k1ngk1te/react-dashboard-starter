@@ -11,55 +11,32 @@ import { z } from 'zod';
 
 dotenv.config();
 
-const ENV_ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS;
-export const ALLOWED_ORIGINS =
-  !ENV_ALLOWED_ORIGINS || ENV_ALLOWED_ORIGINS === '*' ? [] : ENV_ALLOWED_ORIGINS.split(',');
-export const API_AUTH_LIMITER_EXPIRES =
-  process.env.API_AUTH_LIMITER_EXPIRES && !isNaN(+process.env.API_AUTH_LIMITER_EXPIRES)
-    ? +process.env.API_AUTH_LIMITER_EXPIRES
-    : 3600;
-export const API_AUTH_LIMITER_MAX =
-  process.env.API_AUTH_LIMITER_MAX && !isNaN(+process.env.API_AUTH_LIMITER_MAX)
-    ? +process.env.API_AUTH_LIMITER_MAX
-    : 50;
-export const API_DEFAULT_LIMITER_EXPIRES =
-  process.env.API_DEFAULT_LIMITER_EXPIRES && !isNaN(+process.env.API_DEFAULT_LIMITER_EXPIRES)
-    ? +process.env.API_DEFAULT_LIMITER_EXPIRES
-    : 900;
-export const API_DEFAULT_LIMITER_MAX =
-  process.env.API_DEFAULT_LIMITER_MAX && !isNaN(+process.env.API_DEFAULT_LIMITER_MAX)
-    ? +process.env.API_DEFAULT_LIMITER_MAX
-    : 10;
-export const AUTH_KEY = process.env.AUTH_KEY || 'nrGgtPY';
-export const CSRF_TOKEN = process.env.CSRF_TOKEN || 'X-Csrf-Token';
-export const CSRF_TOKEN_EXPIRES =
-  process.env.CSRF_TOKEN_EXPIRES && !isNaN(+process.env.CSRF_TOKEN_EXPIRES)
-    ? +process.env.CSRF_TOKEN_EXPIRES
-    : undefined;
-export const NODE_ENV = process.env.NODE_ENV;
-export const SECRET_KEY = process.env.SECRET_KEY || 'mrhqpzfUCPLie3537e7ebb5f58e';
-export const JWT_EXPIRES =
-  process.env.JWT_EXPIRES && !isNaN(+process.env.JWT_EXPIRES) ? +process.env.JWT_EXPIRES : 14400;
-export const PREVENT_CACHE_ON_GET_AUTH_USER = process.env.PREVENT_CACHE_ON_GET_AUTH_USER !== '0';
-export const TEST_MODE = process.env.TEST_MODE === '1';
-export const DISABLE_CSRF = process.env.DISABLE_CSRF === '1';
+const validateEnvSchema = z.object({
+  ALLOWED_ORIGINS: z
+    .string()
+    .optional()
+    .transform((value) => {
+      if (!value || value === '' || value.trim() === '*') return [];
+      return value.split(',');
+    }),
+  API_AUTH_LIMITER_EXPIRES: z.coerce.number().optional().default(3600), // seconds
+  API_AUTH_LIMITER_MAX: z.coerce.number().optional().default(50), // 50 request count
+  API_DEFAULT_LIMITER_EXPIRES: z.coerce.number().optional().default(900), // seconds
+  API_DEFAULT_LIMITER_MAX: z.coerce.number().optional().default(10), // 10 request count
+  AUTH_KEY: z.string(),
+  CSRF_TOKEN: z.string().optional().default('X-Csrf-Token'),
+  CSRF_TOKEN_EXPIRES: z.coerce.number().optional(), // seconds, if undefined then it's session
+  DISABLE_CSRF: z.coerce.number().optional().default(0).transform(Boolean),
+  JWT_EXPIRES: z.coerce.number().optional().default(14400), // seconds
+  NODE_ENV: z.enum(['production', 'development']).optional().default('production'),
+  PREVENT_CACHE_ON_GET_AUTH_USER: z.coerce.number().optional().default(1).transform(Boolean),
+  SECRET_KEY: z.string(),
+  TEST_MODE: z.coerce.number().optional().default(0).transform(Boolean),
+});
+
+const env = validateEnvSchema.parse(process.env);
 
 // ****** ENVS Stop *********
-
-// ****** Env Validation Start ********
-
-export function validateEnv(): void {
-  const required = ['SECRET_KEY', 'AUTH_KEY'] as const;
-  const missing = required.filter((key) => !process.env[key]);
-  if (missing.length > 0) {
-    throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
-  }
-  if (DISABLE_CSRF && NODE_ENV === 'production') {
-    throw new Error('DISABLE_CSRF cannot be enabled in production.');
-  }
-}
-
-// ****** Env Validation Stop *********
 
 type JwtPayloadDecoded = {
   token: string;
@@ -82,9 +59,9 @@ const baseRouter = express.Router();
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or curl)
-    if (!origin || ALLOWED_ORIGINS.length === 0) return callback(null, true);
+    if (!origin || env.ALLOWED_ORIGINS.length === 0) return callback(null, true);
     // Allow if the origin is in our allowed list
-    if (ALLOWED_ORIGINS.indexOf(origin) === -1) {
+    if (env.ALLOWED_ORIGINS.indexOf(origin) === -1) {
       const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
       return callback(new Error(msg), false);
     }
@@ -102,7 +79,7 @@ baseRouter.use(cors(corsOptions));
 
 function keyGenerator(req: Request, _res: Response): string {
   if (!req.ip) {
-    if (TEST_MODE) console.error('Warning: request.ip is missing!');
+    if (env.TEST_MODE) console.error('Warning: request.ip is missing!');
     return req.socket.remoteAddress ?? '';
   }
 
@@ -111,8 +88,8 @@ function keyGenerator(req: Request, _res: Response): string {
 
 // Limiter for sensitive authentication routes (default window: 1 hour, max: 50 requests)
 const authLimiter = rateLimit({
-  windowMs: API_AUTH_LIMITER_EXPIRES * 1000,
-  limit: API_AUTH_LIMITER_MAX,
+  windowMs: env.API_AUTH_LIMITER_EXPIRES * 1000,
+  limit: env.API_AUTH_LIMITER_MAX,
   message: {
     status: 'error',
     message: 'Too many login attempts from this IP, please try again after 15 minutes',
@@ -123,8 +100,8 @@ const authLimiter = rateLimit({
 
 // Limiter for general API data fetching (default window: 15 minutes, max: 10 requests)
 const apiLimiter = rateLimit({
-  windowMs: API_DEFAULT_LIMITER_EXPIRES * 1000,
-  limit: API_DEFAULT_LIMITER_MAX,
+  windowMs: env.API_DEFAULT_LIMITER_EXPIRES * 1000,
+  limit: env.API_DEFAULT_LIMITER_MAX,
   message: {
     status: 'error',
     message: 'You have exceeded the API request limit. Please try again later.',
@@ -169,21 +146,21 @@ export async function healthController(_req: Request, res: Response): Promise<vo
   try {
     const cookies = cookie.parse(_req.headers.cookie || '');
 
-    if (!DISABLE_CSRF) {
-      const csrfToken = cookies[CSRF_TOKEN];
+    if (!env.DISABLE_CSRF) {
+      const csrfToken = cookies[env.CSRF_TOKEN];
       if (!csrfToken) generateCsrfTokenInResponse(res);
-      else res.setHeader(CSRF_TOKEN, csrfToken);
+      else res.setHeader(env.CSRF_TOKEN, csrfToken);
     }
 
     res.status(200).json({
       status: 'success',
       message: 'Health is Good',
-      data: { ip: TEST_MODE ? _req.ip : undefined },
+      data: { ip: env.TEST_MODE ? _req.ip : undefined },
     });
   } catch (error) {
     res.status(500).json({
       status: 'error',
-      message: TEST_MODE && error instanceof Error ? error.message : 'Something went wrong on the client server.',
+      message: env.TEST_MODE && error instanceof Error ? error.message : 'Something went wrong on the client server.',
     });
   }
 }
@@ -193,8 +170,8 @@ export async function loginController(req: Request, res: Response): Promise<void
   try {
     const { credentials } = loginRequestSchema.parse(req.body);
 
-    const token = jwt.sign(credentials, SECRET_KEY, {
-      expiresIn: JWT_EXPIRES,
+    const token = jwt.sign(credentials, env.SECRET_KEY, {
+      expiresIn: env.JWT_EXPIRES,
     });
 
     // Add CSRF_TOKEN
@@ -214,7 +191,7 @@ export async function loginController(req: Request, res: Response): Promise<void
     }
     res.status(500).json({
       status: 'error',
-      message: TEST_MODE && error instanceof Error ? error.message : 'Something went wrong on the client server.',
+      message: env.TEST_MODE && error instanceof Error ? error.message : 'Something went wrong on the client server.',
     });
   }
 }
@@ -237,7 +214,7 @@ export async function logoutController(_req: Request, res: Response): Promise<vo
 // Auth User Controller
 export async function authUserController(req: Request, res: Response): Promise<void> {
   try {
-    if (PREVENT_CACHE_ON_GET_AUTH_USER) {
+    if (env.PREVENT_CACHE_ON_GET_AUTH_USER) {
       // Prevent netlify from caching this endpoint
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
@@ -245,17 +222,17 @@ export async function authUserController(req: Request, res: Response): Promise<v
     }
 
     const cookies = cookie.parse(req.headers.cookie || '');
-    const token = cookies[AUTH_KEY];
+    const token = cookies[env.AUTH_KEY];
 
     let csrfToken = '';
-    if (!DISABLE_CSRF) {
-      csrfToken = cookies[CSRF_TOKEN] ?? '';
+    if (!env.DISABLE_CSRF) {
+      csrfToken = cookies[env.CSRF_TOKEN] ?? '';
       if (!csrfToken) generateCsrfTokenInResponse(res);
-      else res.setHeader(CSRF_TOKEN, csrfToken);
+      else res.setHeader(env.CSRF_TOKEN, csrfToken);
     }
 
     if (token) {
-      const decoded = jwt.verify(token, SECRET_KEY) as JwtPayloadDecoded;
+      const decoded = jwt.verify(token, env.SECRET_KEY) as JwtPayloadDecoded;
       if (!decoded || !decoded.token) {
         res.status(401).json({
           status: 'error',
@@ -290,14 +267,17 @@ export async function authUserController(req: Request, res: Response): Promise<v
 
 // verify CSRF_TOKEN middleware
 export function verifyCSRFTokenMiddleware(req: Request, res: Response, next: NextFunction): void {
-  if (DISABLE_CSRF) { next(); return; }
+  if (env.DISABLE_CSRF) {
+    next();
+    return;
+  }
   try {
     // Get the token from the cookies
     const cookies = cookie.parse(req.headers.cookie || '');
-    const cookieCsrfToken = cookies[CSRF_TOKEN];
+    const cookieCsrfToken = cookies[env.CSRF_TOKEN];
 
     // Get the token from the request headers
-    const headerCsrfToken = req.header(CSRF_TOKEN);
+    const headerCsrfToken = req.header(env.CSRF_TOKEN);
 
     if (!headerCsrfToken || !cookieCsrfToken) {
       res.status(403).json({
@@ -325,7 +305,7 @@ export function verifyCSRFTokenMiddleware(req: Request, res: Response, next: Nex
       errorCode: ERROR_CODES.ERROR_CSRF_100.code,
       status: 'error',
       message:
-        TEST_MODE && error instanceof Error
+        env.TEST_MODE && error instanceof Error
           ? error.message
           : ERROR_CODES.ERROR_CSRF_100.message + ' Something went wrong on the client server.',
     });
@@ -346,35 +326,35 @@ export function generateCsrfToken(): string {
 // If auth token is passed in then set the auth cookie; if null, clear it.
 export function generateCsrfTokenInResponse(res: Response, token?: string | null): void {
   const csrfToken = generateCsrfToken();
-  res.setHeader(CSRF_TOKEN, csrfToken);
+  res.setHeader(env.CSRF_TOKEN, csrfToken);
 
   const cookies: string[] = [
-    cookie.serialize(CSRF_TOKEN, csrfToken, {
-      expires: CSRF_TOKEN_EXPIRES ? new Date(Date.now() + CSRF_TOKEN_EXPIRES * 1000) : undefined,
+    cookie.serialize(env.CSRF_TOKEN, csrfToken, {
+      expires: env.CSRF_TOKEN_EXPIRES ? new Date(Date.now() + env.CSRF_TOKEN_EXPIRES * 1000) : undefined,
       httpOnly: true,
       path: '/',
       sameSite: 'strict',
-      secure: NODE_ENV !== 'development',
+      secure: env.NODE_ENV !== 'development',
     }),
   ];
   if (token) {
     cookies.push(
-      cookie.serialize(AUTH_KEY, token, {
-        expires: new Date(Date.now() + JWT_EXPIRES * 1000),
+      cookie.serialize(env.AUTH_KEY, token, {
+        expires: new Date(Date.now() + env.JWT_EXPIRES * 1000),
         httpOnly: true,
         path: '/',
         sameSite: 'strict',
-        secure: NODE_ENV !== 'development',
+        secure: env.NODE_ENV !== 'development',
       }),
     );
   } else if (token === null) {
     cookies.push(
-      cookie.serialize(AUTH_KEY, '', {
+      cookie.serialize(env.AUTH_KEY, '', {
         expires: new Date(0),
         httpOnly: true,
         path: '/',
         sameSite: 'strict',
-        secure: NODE_ENV !== 'development',
+        secure: env.NODE_ENV !== 'development',
       }),
     );
   }
