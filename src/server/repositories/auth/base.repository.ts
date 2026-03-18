@@ -1,14 +1,14 @@
 import { CSRF_TOKEN, DISABLE_CSRF } from '~/config';
 import authStore from '~/store/listeners/auth';
 import type {
+  AppResponseType,
   LoginRequestDataType,
   LoginResponseType,
   LogoutResponseType,
-  AppResponseType,
   ServerLoginResponseType,
 } from '~/types';
 import { AppError, handleAllErrors } from '~/utils/errors';
-import HttpInstance from '~/utils/http';
+import { httpClient } from '~/utils/http';
 import { API_GET_USER_URL, API_HEALTH_URL, API_LOGIN_URL, API_LOGOUT_URL } from '../../config/api-routes';
 import { getResponseHeader, NewSuccessDataResponse } from '../../utils/response';
 import type { IAuthRepository } from './auth.type';
@@ -19,16 +19,15 @@ export abstract class BaseAuthRepository implements IAuthRepository {
   abstract getAuth(): Promise<LoginResponseType>;
 
   protected async refreshCsrfToken(): Promise<string> {
-    const response = await HttpInstance.current().get<AppResponseType>(API_HEALTH_URL);
+    const response = await httpClient.get<AppResponseType>(API_HEALTH_URL);
     const newCsrfToken = getResponseHeader(response.headers, CSRF_TOKEN) || '';
     if (!newCsrfToken) throw new AppError(500, 'Unable to refresh CSRF token');
-    HttpInstance.csrf(newCsrfToken);
     authStore.set({ csrfToken: newCsrfToken });
     return newCsrfToken;
   }
 
   protected async getCredentials(): Promise<LoginResponseType> {
-    const response = await HttpInstance.current().get<LoginResponseType>(API_GET_USER_URL);
+    const response = await httpClient.get<LoginResponseType>(API_GET_USER_URL);
     const responseData = response.data;
 
     let csrfToken = responseData.data.csrfToken;
@@ -53,9 +52,11 @@ export abstract class BaseAuthRepository implements IAuthRepository {
     csrfToken: string | null | undefined,
     credentials: ServerLoginResponseType['data'],
   ): Promise<LoginResponseType> {
-    const response = await HttpInstance.csrf(csrfToken ?? '').post<ServerLoginResponseType>(API_LOGIN_URL, {
-      credentials,
-    });
+    const response = await httpClient.post<ServerLoginResponseType>(
+      API_LOGIN_URL,
+      { credentials },
+      { headers: { [CSRF_TOKEN]: csrfToken ?? '' } },
+    );
 
     const responseData = response.data;
     const newCsrfToken =
@@ -73,7 +74,11 @@ export abstract class BaseAuthRepository implements IAuthRepository {
     token: string;
   }): Promise<LogoutResponseType> {
     try {
-      const response = await HttpInstance.login(token, csrfToken ?? '').post<AppResponseType>(API_LOGOUT_URL, {});
+      const response = await httpClient.post<AppResponseType>(
+        API_LOGOUT_URL,
+        {},
+        { headers: { [CSRF_TOKEN]: csrfToken ?? '', Authorization: 'Bearer ' + token } },
+      );
       const responseData = response.data;
       const newCsrfToken = getResponseHeader(response.headers, CSRF_TOKEN);
       const result: LogoutResponseType['data'] = { csrfToken: newCsrfToken };

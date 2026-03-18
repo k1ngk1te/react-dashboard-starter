@@ -1,12 +1,11 @@
 import axios, { type AxiosRequestConfig } from 'axios';
 
-import { CSRF_TOKEN } from '~/config/app';
 import authStore from '~/store/listeners/auth';
 import { authActions } from '~/store/contexts/auth/context';
 
-const axiosInstance = axios.create();
-axiosInstance.defaults.headers.common.Accept = 'application/json';
-axiosInstance.defaults.headers.common['Content-Type'] = 'application/json';
+export const httpClient = axios.create();
+httpClient.defaults.headers.common.Accept = 'application/json';
+httpClient.defaults.headers.common['Content-Type'] = 'application/json';
 
 // Queue of resolvers waiting on an in-progress refresh
 let isRefreshing = false;
@@ -17,7 +16,7 @@ function processQueue(newToken: string) {
   refreshQueue = [];
 }
 
-axiosInstance.interceptors.response.use(
+httpClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const original: AxiosRequestConfig & { _retry?: boolean } = error.config;
@@ -46,7 +45,7 @@ axiosInstance.interceptors.response.use(
       return new Promise((resolve) => {
         refreshQueue.push((newToken: string) => {
           original.headers = { ...original.headers, Authorization: 'Bearer ' + newToken };
-          resolve(axiosInstance(original));
+          resolve(httpClient(original));
         });
       });
     }
@@ -57,11 +56,10 @@ axiosInstance.interceptors.response.use(
     try {
       const result = await handler(refreshToken);
       authStore.set({ token: result.token, refreshToken: result.refreshToken ?? refreshToken });
-      axiosInstance.defaults.headers.common.Authorization = 'Bearer ' + result.token;
-      axiosInstance.defaults.headers.common[CSRF_TOKEN] = authStore.get().csrfToken ?? '';
+      setAuthHeader(result.token);
       processQueue(result.token);
       original.headers = { ...original.headers, Authorization: 'Bearer ' + result.token };
-      return axiosInstance(original);
+      return httpClient(original);
     } catch {
       authActions.logout();
       return Promise.reject(error);
@@ -71,43 +69,10 @@ axiosInstance.interceptors.response.use(
   },
 );
 
-export default class HttpInstance {
-  static httpInstance = axiosInstance;
-
-  static current() {
-    return this.httpInstance;
-  }
-
-  static csrf(csrfToken: string) {
-    this.httpInstance.defaults.headers.common[CSRF_TOKEN] = csrfToken;
-    return this.httpInstance;
-  }
-
-  static login(token: string, csrfToken: string) {
-    this.httpInstance.defaults.headers.common.Authorization = 'Bearer ' + token;
-    this.httpInstance.defaults.headers.common[CSRF_TOKEN] = csrfToken;
-    return this.httpInstance;
-  }
-
-  static logout() {
-    this.httpInstance.defaults.headers.common.Authorization = undefined;
-    return this.httpInstance;
-  }
+export function setAuthHeader(token: string) {
+  httpClient.defaults.headers.common.Authorization = 'Bearer ' + token;
 }
 
-export function httpJson(csrfToken: string) {
-  const axiosInstance = axios.create();
-  axiosInstance.defaults.headers.common.Accept = 'application/json';
-  axiosInstance.defaults.headers.common['Content-Type'] = 'application/json';
-  axiosInstance.defaults.headers.common[CSRF_TOKEN] = csrfToken;
-  return axiosInstance;
-}
-
-export function httpAuth(token: string, csrfToken: string) {
-  const axiosInstance = axios.create();
-  axiosInstance.defaults.headers.common.Accept = 'application/json';
-  axiosInstance.defaults.headers.common.Authorization = 'Bearer ' + token;
-  axiosInstance.defaults.headers.common['Content-Type'] = 'application/json';
-  axiosInstance.defaults.headers.common[CSRF_TOKEN] = csrfToken;
-  return axiosInstance;
+export function clearAuthHeader() {
+  delete httpClient.defaults.headers.common.Authorization;
 }
