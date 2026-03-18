@@ -6,7 +6,7 @@ import classNames from '../../utils/classnames';
 import type { TagProps } from 'antd';
 
 export type TagType = Omit<TagProps, 'icon'> & {
-  icon?: React.ComponentType<any>;
+  icon?: React.ComponentType;
 };
 
 function Tag({ title, icon: Icon, className, ...props }: TagType) {

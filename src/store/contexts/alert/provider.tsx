@@ -6,7 +6,7 @@ import { AlertContext, type AlertContextHandlerType } from './context';
 const AlertProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const timeoutRef = React.useRef<any>(null);
+  const timeoutRef = React.useRef<ReturnType<typeof setTimeout>>(null);
   const [alert, setAlert] = React.useState<AlertContextHandlerType | null>(null);
 
   const colors = React.useMemo(() => {

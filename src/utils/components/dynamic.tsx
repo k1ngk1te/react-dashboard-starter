@@ -1,15 +1,11 @@
 import { Spin } from 'antd';
 import React from 'react';
 
-// React.lazy<React.ComponentType<any>>(factory: () => Promise<{
-//   default: React.ComponentType<any>;
-// }>): React.LazyExoticComponent<React.ComponentType<any>>
-
 function Dynamic({
   fallback,
   component: DynamicComponent,
 }: {
-  component: React.LazyExoticComponent<React.ComponentType<any>>;
+  component: React.LazyExoticComponent<React.ComponentType>;
   fallback?: React.ReactNode;
 }) {
   return (

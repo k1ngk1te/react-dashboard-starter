@@ -33,11 +33,8 @@ type ObjectType = object;
 
 interface TableDataType extends ObjectType {
   onRowClick?: (
-    e: React.MouseEvent<
-      HTMLTableRowElement | HTMLTableDataCellElement,
-      MouseEvent
-    >,
-    data: TableDataType
+    e: React.MouseEvent<HTMLTableRowElement | HTMLTableDataCellElement, MouseEvent>,
+    data: TableDataType,
   ) => void;
 }
 
@@ -53,7 +50,7 @@ interface TableProps<T extends object> {
   filterValue?: string;
   footerRowCount?: number;
   loader?: {
-    component?: React.ComponentType<any>;
+    component?: React.ComponentType;
     loading?: boolean;
     length?: number;
   };
@@ -97,15 +94,11 @@ function Table<T extends object>(
     showFooter,
   }: // showSn = false,
   TableProps<T>,
-  ref: React.ForwardedRef<TableRef<T>>
+  ref: React.ForwardedRef<TableRef<T>>,
 ) {
   const [globalFilter, setGlobalFilter] = React.useState('');
 
-  const {
-    component: LoaderComponent,
-    length: loaderLength,
-    loading: isLoading,
-  } = loader || {};
+  const { component: LoaderComponent, length: loaderLength, loading: isLoading } = loader || {};
 
   const colFilters = React.useMemo(() => columnFilters || [], [columnFilters]);
 
@@ -187,10 +180,7 @@ function Table<T extends object>(
 
       const index = pageNo ? pageIndex + (pageNo - 1) : pageIndex;
 
-      if (
-        !table.getFilteredRowModel ||
-        typeof table.getFilteredRowModel !== 'function'
-      ) {
+      if (!table.getFilteredRowModel || typeof table.getFilteredRowModel !== 'function') {
         return [];
       }
 
@@ -201,7 +191,7 @@ function Table<T extends object>(
 
       return rowsOnPage.map((row) => row.original);
     },
-    [table]
+    [table],
   );
 
   const getPageLength = React.useCallback(() => {
@@ -219,7 +209,7 @@ function Table<T extends object>(
       getRowsOnPage,
       getNoOfPages: getPageLength,
     }),
-    [getRowsOnPage, getPageLength]
+    [getRowsOnPage, getPageLength],
   );
 
   React.useEffect(() => {
@@ -246,15 +236,10 @@ function Table<T extends object>(
                           width: header.getSize(),
                         }}
                       >
-                        <div
-                          className={`flex items-center justify-between select-none`}
-                        >
+                        <div className={`flex items-center justify-between select-none`}>
                           {header.isPlaceholder
                             ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
+                            : flexRender(header.column.columnDef.header, header.getContext())}
                         </div>
                       </th>
                     );
@@ -288,23 +273,15 @@ function Table<T extends object>(
                     </tr>
                   ))
                 : table.getRowModel().rows.map((row) => {
-                    const onRowClick = (row.original as TableDataType)
-                      .onRowClick;
+                    const onRowClick = (row.original as TableDataType).onRowClick;
 
                     return (
-                      <tr
-                        className={`table-row-horizontal ${
-                          onRowClick ? 'hover cursor-pointer' : ''
-                        }`}
-                        key={row.id}
-                      >
+                      <tr className={`table-row-horizontal ${onRowClick ? 'hover cursor-pointer' : ''}`} key={row.id}>
                         {row.getVisibleCells().map((cell) => {
                           return (
                             <td
                               onClick={
-                                !disabledRowClickColumns.includes(
-                                  cell.column.columnDef.id || ''
-                                ) && onRowClick
+                                !disabledRowClickColumns.includes(cell.column.columnDef.id || '') && onRowClick
                                   ? (e) => {
                                       onRowClick(e, row.original);
                                     }
@@ -314,10 +291,7 @@ function Table<T extends object>(
                               style={{ width: cell.column.getSize() }}
                             >
                               <div className="table-data">
-                                {flexRender(
-                                  cell.column.columnDef.cell,
-                                  cell.getContext()
-                                )}
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
                               </div>
                             </td>
                           );
@@ -345,10 +319,7 @@ function Table<T extends object>(
                             >
                               {header.isPlaceholder
                                 ? null
-                                : flexRender(
-                                    header.column.columnDef.footer,
-                                    header.getContext()
-                                  )}
+                                : flexRender(header.column.columnDef.footer, header.getContext())}
                             </td>
                           );
                         })}
@@ -356,44 +327,36 @@ function Table<T extends object>(
 
                       {footerRowCount > 1 && (
                         <>
-                          {Array.from({ length: footerRowCount - 1 }).map(
-                            (_, i) => {
-                              const key =
-                                footerGroup.id + `-${i + 1}-` + 'footer';
-                              return (
-                                <tr
-                                  className="table-footer-row-horizontal"
-                                  key={key}
-                                >
-                                  {footerGroup.headers.map((header, index) => {
-                                    const columnDef = header.column
-                                      .columnDef as any;
-                                    const key =
-                                      header.id +
-                                      `-${index + 1}-` +
-                                      'footer-item';
-                                    return (
-                                      <td
-                                        key={key}
-                                        colSpan={header.colSpan}
-                                        className="table-footer-data"
-                                        style={{
-                                          width: header.getSize(),
-                                        }}
-                                      >
-                                        {header.isPlaceholder
-                                          ? null
-                                          : flexRender(
-                                              columnDef['footer' + (i + 2)],
-                                              header.getContext()
-                                            )}
-                                      </td>
-                                    );
-                                  })}
-                                </tr>
-                              );
-                            }
-                          )}
+                          {Array.from({ length: footerRowCount - 1 }).map((_, i) => {
+                            const key = footerGroup.id + `-${i + 1}-` + 'footer';
+                            return (
+                              <tr className="table-footer-row-horizontal" key={key}>
+                                {footerGroup.headers.map((header, index) => {
+                                  const columnDef = header.column.columnDef;
+                                  const key = header.id + `-${index + 1}-` + 'footer-item';
+                                  return (
+                                    <td
+                                      key={key}
+                                      colSpan={header.colSpan}
+                                      className="table-footer-data"
+                                      style={{
+                                        width: header.getSize(),
+                                      }}
+                                    >
+                                      {header.isPlaceholder
+                                        ? null
+                                        : flexRender(
+                                            (columnDef as unknown as Record<string, ColumnDef<T>['footer']>)[
+                                              'footer' + (i + 2)
+                                            ],
+                                            header.getContext(),
+                                          )}
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            );
+                          })}
                         </>
                       )}
                     </React.Fragment>
@@ -429,6 +392,8 @@ function Table<T extends object>(
   );
 }
 
-const ForwardedTable = React.forwardRef(Table);
+const ForwardedTable = React.forwardRef(Table) as <T extends object>(
+  props: TableProps<T> & React.RefAttributes<TableRef<T>>,
+) => React.ReactElement | null;
 
 export default ForwardedTable;

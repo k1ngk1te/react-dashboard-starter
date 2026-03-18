@@ -8,11 +8,11 @@ import { DisplayImage } from '../image';
 import type { ButtonProps } from 'antd';
 
 export type TableActionType = Omit<ButtonProps, 'icon'> & {
-  container?: React.ComponentType<any>;
+  container?: React.ComponentType<{ children: React.ReactNode }>;
   keepButtonContainer?: boolean;
   title?: string;
   href?: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType;
   color?: ColorType;
 };
 
@@ -218,7 +218,7 @@ export function TableIconTitleSubCell({
   title: React.ReactNode;
   subtitle?: React.ReactNode;
   titleClassName?: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType;
 }) {
   return (
     <span className="flex items-start no-underline py-2">
