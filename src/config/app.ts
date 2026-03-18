@@ -6,13 +6,12 @@ export const DEFAULT_PAGINATION_SIZE = 100;
 
 export const REFETCH_INTERVAL = 1000 * 60 * 1;
 
-export const NODE_ENV = import.meta.env.NODE_ENV === 'development' ? 'development' : 'production';
+import env from './env';
 
-export const TEST_MODE = import.meta.env.VITE_TEST_MODE
-  ? !isNaN(+import.meta.env.VITE_TEST_MODE) && +import.meta.env.VITE_TEST_MODE === 1
-  : false;
+export const NODE_ENV = env.NODE_ENV;
+export const TEST_MODE = env.TEST_MODE;
 
 // Keys
-export const CSRF_TOKEN = import.meta.env.VITE_CSRF_TOKEN || 'X-Csrf-Token';
-export const DISABLE_CSRF = import.meta.env.VITE_DISABLE_CSRF === '1';
+export const CSRF_TOKEN = env.CSRF_TOKEN;
+export const DISABLE_CSRF = env.DISABLE_CSRF;
 export const USER_DATA_KEY = 'user_data';

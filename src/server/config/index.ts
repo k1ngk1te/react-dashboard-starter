@@ -1,1 +1,3 @@
-export const USE_MOCK = import.meta.env.VITE_USE_MOCK === '1';
+import env from '~/config/env';
+
+export const USE_MOCK = env.USE_MOCK;

@@ -1,3 +1,5 @@
-const BASE_URL = import.meta.env.STATIC_URL || '';
+import env from './env';
+
+const BASE_URL = env.STATIC_URL;
 
 export const LOGO_IMAGE = BASE_URL + '/vite.svg';
