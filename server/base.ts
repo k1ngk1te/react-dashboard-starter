@@ -70,6 +70,10 @@ const corsOptions: cors.CorsOptions = {
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true, // Required for cookies and custom headers across origins
+  // allowedHeaders controls which request headers the browser may send.
+  // Default (unset): reflects whatever the client sends in Access-Control-Request-Headers
+  // — permissive and fine for development. Lock it down explicitly in production:
+  // allowedHeaders: ['Content-Type', 'Authorization', env.CSRF_TOKEN].filter(Boolean) as string[],
   // IMPORTANT: If the frontend and backend are on different domains (e.g. Vercel + Railway),
   // the browser will block JavaScript from reading the CSRF token response header unless it
   // is explicitly exposed here. Uncomment the line below in that case:
