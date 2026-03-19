@@ -163,6 +163,8 @@ All state-mutating endpoints (`POST /api/auth/login/` and `POST /api/auth/logout
 
 If the client receives `ERROR_CSRF_100`, it automatically reloads the page to obtain a fresh CSRF token.
 
+> **Cross-domain deployments:** If the frontend and backend are on different domains (e.g. Vercel + Railway), the browser will block JavaScript from reading the `X-Csrf-Token` response header unless it is explicitly exposed via the `exposedHeaders` CORS option. Uncomment the `exposedHeaders` line in `server/base.ts` in that case.
+
 ---
 
 ## Rate Limiting

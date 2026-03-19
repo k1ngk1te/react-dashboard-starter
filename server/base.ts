@@ -68,8 +68,12 @@ const corsOptions: cors.CorsOptions = {
     }
     return callback(null, true);
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Specify allowed methods
-  credentials: true, // This is crucial for sending cookies and custom headers
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true, // Required for cookies and custom headers across origins
+  // IMPORTANT: If the frontend and backend are on different domains (e.g. Vercel + Railway),
+  // the browser will block JavaScript from reading the CSRF token response header unless it
+  // is explicitly exposed here. Uncomment the line below in that case:
+  // exposedHeaders: env.CSRF_TOKEN && !env.DISABLE_CSRF ? [env.CSRF_TOKEN] : undefined,
 };
 
 baseRouter.use(cors(corsOptions));
