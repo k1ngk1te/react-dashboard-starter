@@ -21,7 +21,7 @@ httpClient.interceptors.response.use(
   async (error) => {
     const original: AxiosRequestConfig & { _retry?: boolean } = error.config;
 
-    if (error?.response?.status !== 401) {
+    if (error?.response?.status !== 401 || !original) {
       return Promise.reject(error);
     }
 
