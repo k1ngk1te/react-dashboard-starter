@@ -1,89 +1,95 @@
 import { CheckCircleFilled, CloseCircleFilled, ExclamationCircleFilled } from '@ant-design/icons';
-import React from 'react';
-
+import { message } from 'antd';
+import { type ReactNode, useCallback } from 'react';
 import { AlertContext, type AlertContextHandlerType } from './context';
+import { classNames } from '~/utils';
 
-const AlertProvider: React.FC<{
-  children: React.ReactNode;
-}> = ({ children }) => {
-  const timeoutRef = React.useRef<ReturnType<typeof setTimeout>>(null);
-  const [alert, setAlert] = React.useState<AlertContextHandlerType | null>(null);
+export default function ToastProvider({ children }: { children: ReactNode }) {
+  const [messageApi, contextHolder] = message.useMessage();
 
-  const colors = React.useMemo(() => {
-    let data = {
-      icon: <ExclamationCircleFilled />,
-    };
-    if (alert?.type === 'danger' || alert?.type === 'error') {
-      data = {
-        icon: <CloseCircleFilled />,
-      };
-    } else if (alert?.type === 'success') {
-      data = {
-        icon: <CheckCircleFilled />,
-      };
-    } else if (alert?.type === 'warning') {
-      data = {
-        icon: <ExclamationCircleFilled />,
-      };
-    }
+  const close = useCallback(
+    (key?: string) => {
+      messageApi.destroy(key);
+    },
+    [messageApi],
+  );
 
-    return data;
-  }, [alert?.type]);
+  const open = useCallback(
+    (data: AlertContextHandlerType) => {
+      let icon: React.ReactNode;
 
-  const open = React.useCallback((data: AlertContextHandlerType) => {
-    setAlert(data);
-
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    timeoutRef.current = setTimeout(() => {
-      setAlert(null);
-    }, data.duration || 5000);
-  }, []);
-
-  const close = React.useCallback(() => {
-    setAlert(null);
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-  }, []);
-
-  React.useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+      if (data.icon === undefined) {
+        switch (data?.type) {
+          case 'danger':
+          case 'error':
+            icon = <CloseCircleFilled />;
+            break;
+          case 'info':
+          case 'warning':
+            icon = <ExclamationCircleFilled />;
+            break;
+          case 'success':
+            icon = <CheckCircleFilled />;
+            break;
+          default:
+            break;
+        }
       }
-    };
-  }, []);
+
+      const type = data.type === 'danger' ? 'error' : data.type;
+
+      messageApi.open({
+        ...data,
+        icon,
+        className: classNames('custom-notification-message', type || '', data.className || ''),
+        content: data.message,
+        type,
+      });
+    },
+    [messageApi],
+  );
+
+  const buildCallback = useCallback(
+    (
+      type: NonNullable<AlertContextHandlerType['type']>,
+      message: string,
+      options?: Omit<AlertContextHandlerType, 'type' | 'message'>,
+    ) => {
+      open({ ...options, message, type });
+    },
+    [open],
+  );
+
+  const success = useCallback(
+    (message: string, options?: Omit<AlertContextHandlerType, 'message' | 'type'>) =>
+      buildCallback('success', message, options),
+    [buildCallback],
+  );
+  const danger = useCallback(
+    (message: string, options?: Omit<AlertContextHandlerType, 'message' | 'type'>) =>
+      buildCallback('danger', message, options),
+    [buildCallback],
+  );
+  const error = useCallback(
+    (message: string, options?: Omit<AlertContextHandlerType, 'message' | 'type'>) =>
+      buildCallback('error', message, options),
+    [buildCallback],
+  );
+  const info = useCallback(
+    (message: string, options?: Omit<AlertContextHandlerType, 'message' | 'type'>) =>
+      buildCallback('info', message, options),
+    [buildCallback],
+  );
+  const warning = useCallback(
+    (message: string, options?: Omit<AlertContextHandlerType, 'message' | 'type'>) =>
+      buildCallback('warning', message, options),
+    [buildCallback],
+  );
 
   return (
-    <AlertContext.Provider
-      value={{
-        open,
-        close,
-        success: (message, options) => open({ message, type: 'success', ...options }),
-        error: (message, options) => open({ message, type: 'error', ...options }),
-      }}
-    >
-      <div
-        className={`${alert ? 'translate-y-0 z-[9999]' : 'translate-y-full -z-10'} ${
-          alert?.rootClassName || ''
-        } duration-700 notification-alert`}
-      >
-        <div className={`notification-alert-wrapper ${alert?.wrapperClassName || ''}`}>
-          {alert && (
-            <div className={`notification-alert-msg-container ${alert.type || 'default'}`}>
-              <span className="notification-alert-icon">{colors.icon}</span>
-              <span className="notification-alert-message">{alert.message}</span>
-            </div>
-          )}
-        </div>
-      </div>
-
+    <AlertContext.Provider value={{ open, close, success, danger, error, info, warning }}>
+      {contextHolder}
       {children}
     </AlertContext.Provider>
   );
-};
-
-export default AlertProvider;
+}

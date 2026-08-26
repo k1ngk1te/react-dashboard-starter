@@ -5,6 +5,10 @@
 :root {
   --primary-color: green;
   --primary-font: 'Poppins', sans-serif !important;
+
+  --green-color: hsla(148, 78%, 39%, 1);
+  --red-color: hsla(360, 78%, 62%, 1);
+  --yellow-color: hsla(41, 92%, 54%, 1);
 }
 
 * {
@@ -199,23 +203,44 @@ ul {
 
 /* Notification Styling Start */
 
-.notification-alert {
-  @apply bottom-6 fixed left-0 w-full;
+.custom-notification-message.ant-message-notice .ant-message-notice-content {
+  @apply px-4 py-3 rounded-lg text-sm;
 }
 
-.notification-alert-wrapper {
-  @apply flex justify-center w-full;
+.custom-notification-message.success .ant-message-notice-content {
+  background-color: var(--green-color);
+  color: white;
 }
 
-.notification-alert-msg-container {
-  @apply bg-gray-500 flex items-start gap-2 min-w-96 max-w-md px-8 py-4 rounded-lg text-sm text-white;
+.custom-notification-message.success .ant-message-notice-content .anticon {
+  color: white;
 }
-.notification-alert-msg-container.danger,
-.notification-alert-msg-container.error {
-  @apply bg-red-600;
+
+.custom-notification-message.error .ant-message-notice-content {
+  background-color: var(--red-bg-color);
+  color: white;
 }
-.notification-alert-msg-container.success {
-  @apply bg-emerald-500;
+
+.custom-notification-message.error .ant-message-notice-content .anticon {
+  color: white;
+}
+
+.custom-notification-message.warning .ant-message-notice-content {
+  background-color: var(--yellow-color);
+  color: black;
+}
+
+.custom-notification-message.warning .ant-message-notice-content .anticon {
+  color: black;
+}
+
+.custom-notification-message.dark .ant-message-notice-content {
+  background-color: #07001a;
+  color: white;
+}
+
+.custom-notification-message.dark .ant-message-notice-content .anticon {
+  color: white;
 }
 
 /* Notification Styling Stop */
