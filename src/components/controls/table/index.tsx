@@ -175,23 +175,24 @@ function Table<T extends object>(
         return [];
       }
 
+      if (!table.getFilteredRowModel || typeof table.getFilteredRowModel !== 'function') {
+        return [];
+      }
+
+      if (manualPagination) {
+        return table.getFilteredRowModel().rows.map((row) => row.original);
+      }
+
       const pageIndex = tableState.pagination.pageIndex;
       const pageSize = tableState.pagination.pageSize;
 
       const index = pageNo ? pageIndex + (pageNo - 1) : pageIndex;
 
-      if (!table.getFilteredRowModel || typeof table.getFilteredRowModel !== 'function') {
-        return [];
-      }
-
-      const rowsOnPage = table
-        // .getCoreRowModel()
-        .getFilteredRowModel()
-        .rows.slice(index * pageSize, (index + 1) * pageSize);
+      const rowsOnPage = table.getFilteredRowModel().rows.slice(index * pageSize, (index + 1) * pageSize);
 
       return rowsOnPage.map((row) => row.original);
     },
-    [table],
+    [table, manualPagination],
   );
 
   const getPageLength = React.useCallback(() => {
