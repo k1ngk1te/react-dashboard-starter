@@ -1,6 +1,7 @@
 import type { LoginRequestDataType, LoginResponseType, LogoutResponseType } from '~/types';
 
 import { AppError, handleAllErrors } from '~/utils/errors';
+import { LOGIN_ERRORS, STATUS_CODES } from '~/utils/errors/constants';
 import * as AuthSerializer from '../../serializers/auth.serializer';
 import { NewSuccessDataResponse } from '../../utils/response';
 import { BaseAuthRepository } from './base.repository';
@@ -10,7 +11,13 @@ export class MockAuthRepository extends BaseAuthRepository {
     return this.getCredentials();
   }
 
-  async login({ csrfToken, data }: { csrfToken?: string | null; data: LoginRequestDataType }): Promise<LoginResponseType> {
+  async login({
+    csrfToken,
+    data,
+  }: {
+    csrfToken?: string | null;
+    data: LoginRequestDataType;
+  }): Promise<LoginResponseType> {
     const credentials = AuthSerializer.serializeLogin({
       token: 'token',
       data: {
@@ -43,7 +50,7 @@ export class MockAuthRepository extends BaseAuthRepository {
       }
     }
 
-    if (!result) throw new AppError(500, 'Unable to Sign In');
+    if (!result) throw new AppError(STATUS_CODES.INTERNAL_SERVER_ERROR, LOGIN_ERRORS.RESULT_NOT_ASSIGNED);
 
     return NewSuccessDataResponse(result.data);
   }

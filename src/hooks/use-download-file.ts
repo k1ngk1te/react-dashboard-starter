@@ -1,5 +1,8 @@
 import React from 'react';
 import { useAlertContext } from '~/store/contexts';
+import { handleAllErrors } from '~/utils/errors';
+import AppError from '~/utils/errors/app-error';
+import { DOCUMENT_ERRORS, STATUS_CODES } from '~/utils/errors/constants';
 
 /**
  * useViewDownloadFile
@@ -40,7 +43,7 @@ export default function useViewDownloadFile({
       });
 
       if (!response.ok) {
-        throw new Error('Error Getting Document');
+        throw new AppError(STATUS_CODES.INTERNAL_SERVER_ERROR, DOCUMENT_ERRORS.FETCH_DOCUMENT_ERROR);
       }
 
       // Convert the response into a Blob and create a downloadable URL
@@ -58,9 +61,10 @@ export default function useViewDownloadFile({
       link.remove();
       URL.revokeObjectURL(url);
     } catch (error) {
+      const err = handleAllErrors(error, { defaultMessage: DOCUMENT_ERRORS.DOWNLOAD_DOCUMENT_ERROR });
       alert.open({
         type: 'error',
-        message: (error as any).message || 'Error Downloading Document',
+        message: err.message,
       });
     } finally {
       setDownloading(false);
@@ -81,7 +85,7 @@ export default function useViewDownloadFile({
       });
 
       if (!response.ok) {
-        throw new Error('Error Getting Document');
+        throw new AppError(STATUS_CODES.INTERNAL_SERVER_ERROR, DOCUMENT_ERRORS.FETCH_DOCUMENT_ERROR);
       }
 
       // Create a URL from Blob and open in new tab
@@ -89,9 +93,10 @@ export default function useViewDownloadFile({
       const url = URL.createObjectURL(blob);
       window.open(url, '_blank');
     } catch (error) {
+      const err = handleAllErrors(error, { defaultMessage: DOCUMENT_ERRORS.VIEW_DOCUMENT_ERROR });
       alert.open({
         type: 'error',
-        message: (error as any).message || 'Error Viewing Document',
+        message: err.message,
       });
     } finally {
       setViewLoading(false);
@@ -133,7 +138,7 @@ export function useExternalViewDownloadFile({ token }: { token: string }) {
         });
 
         if (!response.ok) {
-          throw new Error('Error Getting Document');
+          throw new AppError(STATUS_CODES.INTERNAL_SERVER_ERROR, DOCUMENT_ERRORS.FETCH_DOCUMENT_ERROR);
         }
 
         const blob = await response.blob();
@@ -148,15 +153,16 @@ export function useExternalViewDownloadFile({ token }: { token: string }) {
         link.remove();
         URL.revokeObjectURL(url);
       } catch (error) {
+        const err = handleAllErrors(error, { defaultMessage: DOCUMENT_ERRORS.VIEW_DOCUMENT_ERROR });
         alert.open({
           type: 'error',
-          message: (error as any).message || 'Error Viewing Document',
+          message: err.message,
         });
       } finally {
         setDownloading(false);
       }
     },
-    [alert, token]
+    [alert, token],
   );
 
   /**
@@ -176,22 +182,23 @@ export function useExternalViewDownloadFile({ token }: { token: string }) {
         });
 
         if (!response.ok) {
-          throw new Error('Error Getting Document');
+          throw new AppError(STATUS_CODES.INTERNAL_SERVER_ERROR, DOCUMENT_ERRORS.FETCH_DOCUMENT_ERROR);
         }
 
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         window.open(url, '_blank');
       } catch (error) {
+        const err = handleAllErrors(error, { defaultMessage: DOCUMENT_ERRORS.VIEW_DOCUMENT_ERROR });
         alert.open({
           type: 'error',
-          message: (error as any).message || 'Error Viewing Document',
+          message: err.message,
         });
       } finally {
         setViewLoading(false);
       }
     },
-    [alert, token]
+    [alert, token],
   );
 
   return { view: viewFile, download: downloadFile, downloading, viewLoading };

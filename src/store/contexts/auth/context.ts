@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react';
 import authStore from '~/store/listeners/auth';
 import type { AuthDataType } from '~/types';
 import { AppError } from '~/utils/errors';
+import { STATUS_CODES } from '~/utils/errors/constants';
 
 export type LoginPayloadType = { user: AuthDataType; csrfToken: string; token: string };
 export type LogoutPayloadType = { csrfToken?: string } | void;
@@ -36,6 +37,6 @@ export const useAuthContext = () => {
 
 export const useUserContext = () => {
   const { csrfToken, data, token, ...context } = useAuthContext();
-  if (!data || !token || !csrfToken) throw new AppError(401);
+  if (!data || !token || !csrfToken) throw new AppError(STATUS_CODES.UNAUTHORIZED);
   return { ...context, user: data, csrfToken, data, token };
 };

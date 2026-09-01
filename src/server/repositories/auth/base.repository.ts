@@ -8,6 +8,7 @@ import type {
   ServerLoginResponseType,
 } from '~/types';
 import { AppError, handleAllErrors } from '~/utils/errors';
+import { CSRF_TOKEN_ERRORS, STATUS_CODES } from '~/utils/errors/constants';
 import { httpClient } from '~/utils/http';
 import { API_GET_USER_URL, API_HEALTH_URL, API_LOGIN_URL, API_LOGOUT_URL } from '../../config/api-routes';
 import { getResponseHeader, NewSuccessDataResponse } from '../../utils/response';
@@ -21,7 +22,8 @@ export abstract class BaseAuthRepository implements IAuthRepository {
   protected async refreshCsrfToken(): Promise<string> {
     const response = await httpClient.get<AppResponseType>(API_HEALTH_URL);
     const newCsrfToken = getResponseHeader(response.headers, CSRF_TOKEN) || '';
-    if (!newCsrfToken) throw new AppError(500, 'Unable to refresh CSRF token');
+    if (!newCsrfToken)
+      throw new AppError(STATUS_CODES.INTERNAL_SERVER_ERROR, CSRF_TOKEN_ERRORS.CSRF_TOKEN_REFRESH_FAILED);
     authStore.set({ csrfToken: newCsrfToken });
     return newCsrfToken;
   }
@@ -36,7 +38,7 @@ export abstract class BaseAuthRepository implements IAuthRepository {
     const BROWSER_REFRESHED_KEY = 'browser_refreshed';
     if (!csrfToken && !DISABLE_CSRF) {
       if (sessionStorage.getItem(BROWSER_REFRESHED_KEY)) {
-        throw new AppError(400, 'CSRF TOKEN was not provided');
+        throw new AppError(STATUS_CODES.BAD_REQUEST, CSRF_TOKEN_ERRORS.CSRF_TOKEN_NOT_PROVIDED);
       }
       sessionStorage.setItem(BROWSER_REFRESHED_KEY, 'true');
       await this.refreshCsrfToken();
