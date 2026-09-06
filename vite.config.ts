@@ -2,6 +2,8 @@ import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
+import buildVersionPlugin from './vite-plugin-build-version';
+
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -12,7 +14,7 @@ export default defineConfig(({ mode }) => {
       outDir: '../dist',
     },
     envDir: '../',
-    plugins: [react()],
+    plugins: [react(), buildVersionPlugin()],
     publicDir: '../public',
     resolve: {
       alias: {

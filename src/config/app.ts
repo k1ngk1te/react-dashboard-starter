@@ -15,3 +15,15 @@ export const TEST_MODE = env.TEST_MODE;
 export const CSRF_TOKEN = env.CSRF_TOKEN;
 export const DISABLE_CSRF = env.DISABLE_CSRF;
 export const USER_DATA_KEY = 'user_data';
+
+// Auto-refresh-on-new-deploy
+// Static file written next to index.html on every production build (see
+// vite-plugin-build-version.ts). Served automatically by Netlify and the
+// Express server in production.
+export const BUILD_VERSION_URL = '/build-version.json';
+// App-namespaced so it can't collide with anything else on the same origin.
+export const BUILD_VERSION_STORAGE_KEY = 'kite-react-dashboard-starter:build-version';
+// How often an open tab re-checks for a new build.
+export const VERSION_CHECK_INTERVAL = 1000 * 60 * 10; // 10 minutes
+// How long the "updating" notice stays visible before the reload fires.
+export const RELOAD_NOTICE_DELAY = 2200; // ms
