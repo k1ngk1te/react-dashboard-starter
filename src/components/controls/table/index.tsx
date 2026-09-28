@@ -230,7 +230,8 @@ function Table<T extends object>(
       {/* Table Start */}
       <div className="flex flex-col">
         <div className={`table-container ${containerClassName || ''}`.trim()}>
-          <table style={{ minWidth: table.getTotalSize(), width: '100%' }}>
+          {/* <table style={{ minWidth: table.getTotalSize(), width: '100%' }}> */}
+          <table style={{ minWidth: table.getCenterTotalSize(), width: '100%' }}>
             <thead>
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
