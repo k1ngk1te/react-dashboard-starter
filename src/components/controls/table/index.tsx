@@ -244,7 +244,7 @@ function Table<T extends object>(
                           width: header.getSize(),
                         }}
                       >
-                        <div className={`flex items-center justify-between select-none`}>
+                        <div className="table-head-box">
                           {header.isPlaceholder
                             ? null
                             : flexRender(header.column.columnDef.header, header.getContext())}
@@ -409,17 +409,21 @@ function TableLoader<T extends object>({
 
   return Array.from({ length }).map((_, i) => (
     <tr key={i} className="table-row-horizontal">
-      {columns.map((col) => (
-        <td key={col.id} style={{ width: col.size }}>
-          <div className="table-data">
-            {LoaderComponent ? (
-              <LoaderComponent />
-            ) : (
-              <Skeleton.Input active style={{ display: 'inline-block', width: col.size }} size="small" />
-            )}
-          </div>
-        </td>
-      ))}
+      {columns.map((col) => {
+        const columnDef = col as unknown as Record<string, Record<string, string | number>>;
+        const size = +(columnDef?.size || 40);
+        return (
+          <td key={col.id} style={{ width: size }}>
+            <div className="table-data">
+              {LoaderComponent ? (
+                <LoaderComponent />
+              ) : (
+                <Skeleton.Input active style={{ display: 'inline-block', width: size }} size="small" />
+              )}
+            </div>
+          </td>
+        );
+      })}
     </tr>
   ));
 }

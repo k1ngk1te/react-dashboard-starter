@@ -26,20 +26,34 @@
   @apply border border-x-0 border-solid;
 }
 
+.table-container thead tr th:first-child,
+.table-container tbody tr td:first-child {
+  @apply pl-2;
+}
+
+.table-container thead tr th:last-child,
+.table-container tbody tr td:last-child {
+  @apply pr-2;
+}
+
 .table-container .table-head {
-  @apply font-normal px-2 py-3 text-left text-sm tracking-wider;
+  @apply font-normal text-left text-sm;
+}
+
+.table-container .table-head .table-head-box {
+  @apply flex items-center justify-between min-h-10 select-none;
 }
 
 .table-container .table-data {
-  @apply leading-6 max-w-[17rem] min-w-[5rem] px-2 py-3 whitespace-break-spaces text-sm;
+  @apply min-h-10 whitespace-break-spaces text-sm;
 }
 
-.table-container .table-data-sn {
-  @apply w-2 text-center text-sm;
+.table-container .table-data .loading-skeleton {
+  @apply min-w-10;
 }
 
 .table-container .table-footer-data {
-  @apply capitalize px-2 py-4 text-sm;
+  @apply min-h-10 text-sm;
 }
 
 /* Table Styling Stop */
