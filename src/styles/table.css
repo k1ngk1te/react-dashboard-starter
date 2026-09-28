@@ -42,47 +42,4 @@
   @apply capitalize px-2 py-4 text-sm;
 }
 
-.table-avatar-title-sub-cell {
-  @apply flex flex-wrap items-center w-full;
-}
-
-.table-avatar-title-sub-cell-image {
-  @apply flex-shrink-0 h-10 w-10;
-}
-
-.table-avatar-title-sub-cell-image > div {
-  @apply h-10 relative rounded-full w-10;
-}
-
-.table-avatar-title-sub-cell-image > div img {
-  @apply h-full rounded-full w-full;
-}
-
-.table-avatar-title-sub-cell-image-placeholder {
-  @apply h-10 inline-flex items-center justify-center rounded-lg w-10;
-}
-
-.table-container tbody tr:nth-child(even) .table-avatar-title-sub-cell-image-placeholder {
-  @apply bg-gray-300;
-}
-
-.table-avatar-title-sub-cell-image-placeholder.image-icon > span {
-  @apply left-[0.05rem] relative top-[0.075rem];
-}
-
-.table-avatar-title-sub-cell-title {
-  @apply pl-4 text-left;
-  width: calc(100% - 3rem);
-}
-
-.table-avatar-title-sub-cell-title .title {
-  @apply leading-6 mb-0.5 text-sm font-medium whitespace-break-spaces;
-  word-wrap: break-word;
-}
-
-.table-avatar-title-sub-cell-title .subtitle {
-  @apply leading-5 m-0 normal-case font-normal whitespace-break-spaces text-sm;
-  word-wrap: break-word;
-}
-
 /* Table Styling Stop */
