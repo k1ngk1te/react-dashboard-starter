@@ -1,18 +1,3 @@
-import {
-  flexRender,
-  getCoreRowModel,
-  getExpandedRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  useReactTable,
-} from '@tanstack/react-table';
-import React from 'react';
-
-import { DEFAULT_PAGINATION_SIZE } from '../../../config/app';
-import useDebounce from '../../../hooks/use-debounce';
-import { contains } from './filters';
-import Pagination from './pagination';
-
 import type {
   ColumnDef,
   ColumnFilter,
@@ -24,7 +9,20 @@ import type {
   TableState,
   VisibilityState,
 } from '@tanstack/react-table';
+import {
+  flexRender,
+  getCoreRowModel,
+  getExpandedRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
+import React from 'react';
+import { DEFAULT_PAGINATION_SIZE } from '../../../config/app';
+import useDebounce from '../../../hooks/use-debounce';
 import Skeleton from '../skeleton';
+import { contains } from './filters';
+import Pagination from './pagination';
 
 type PaginationState = {
   pageIndex: number;
@@ -40,6 +38,12 @@ interface TableDataType extends ObjectType {
   ) => void;
 }
 
+type TablePropsLoader = {
+  component?: React.ComponentType;
+  loading?: boolean;
+  length?: number;
+};
+
 interface TableProps<T extends object> {
   containerClassName?: string;
   columnFilters?: ColumnFilter[];
@@ -53,11 +57,7 @@ interface TableProps<T extends object> {
   filterFn?: FilterFn<T>;
   filterValue?: string;
   footerRowCount?: number;
-  loader?: {
-    component?: React.ComponentType;
-    loading?: boolean;
-    length?: number;
-  };
+  loader?: TablePropsLoader;
   manualPagination?: boolean;
   onPaginationChange?: OnChangeFn<PaginationState>;
   pageCount?: number;
@@ -104,8 +104,6 @@ function Table<T extends object>(
 ) {
   const [expanded, setExpanded] = React.useState<ExpandedState>({});
   const [globalFilter, setGlobalFilter] = React.useState('');
-
-  const { component: LoaderComponent, length: loaderLength, loading: isLoading } = loader || {};
 
   const colFilters = React.useMemo(() => columnFilters || [], [columnFilters]);
 
@@ -259,72 +257,53 @@ function Table<T extends object>(
             </thead>
 
             <tbody>
-              {loader && isLoading
-                ? Array.from({ length: loaderLength || 7 }).map((_, i) => (
-                    <tr key={i} className="table-row-horizontal">
-                      {table.getVisibleFlatColumns().map((col) => (
-                        <td key={col.id}>
-                          <div className="table-data">
-                            {LoaderComponent ? (
-                              <LoaderComponent />
-                            ) : (
-                              <Skeleton.Input
-                                active
-                                style={{
-                                  display: 'inline-block',
-                                  width: 'auto',
-                                }}
-                                size="small"
-                              />
-                            )}
-                          </div>
-                        </td>
-                      ))}
-                    </tr>
-                  ))
-                : table.getRowModel().rows.map((row) => {
-                    const onRowClick = (row.original as TableDataType).onRowClick;
-                    const canExpand = row.getCanExpand();
+              {loader?.loading ? (
+                <TableLoader columns={table.getVisibleFlatColumns()} {...loader} />
+              ) : (
+                table.getRowModel().rows.map((row) => {
+                  const onRowClick = (row.original as TableDataType).onRowClick;
+                  const canExpand = row.getCanExpand();
 
-                    return (
-                      <React.Fragment key={row.id}>
-                        <tr className={`table-row-horizontal ${onRowClick ? 'hover cursor-pointer' : ''}`} key={row.id}>
-                          {row.getVisibleCells().map((cell) => {
-                            return (
-                              <td
-                                onClick={
-                                  !disabledRowClickColumns.includes(cell.column.columnDef.id || '') &&
-                                  (onRowClick || row.toggleExpanded())
-                                    ? (e) => {
-                                        if (onRowClick) onRowClick(e, row.original);
-                                        // A row that can expand toggles its
-                                        // sub-panel on click too, not just via
-                                        // the dedicated expand-arrow column.
-                                        if (canExpand) row.toggleExpanded();
-                                      }
-                                    : undefined
-                                }
-                                key={cell.id}
-                                style={{ width: cell.column.getSize() }}
-                              >
-                                <div className="table-data">
-                                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                </div>
-                              </td>
-                            );
-                          })}
-                        </tr>
-                        {/* If the row is expanded, render the expanded UI as a separate row with a single cell that spans the width of the table */}
-                        {row.getIsExpanded() && ExpandedRow && (
-                          <tr className="table-row-horizontal">
-                            <td colSpan={row.getVisibleCells().length}>
-                              <ExpandedRow row={row} />
+                  return (
+                    <React.Fragment key={row.id}>
+                      <tr className={`table-row-horizontal ${onRowClick ? 'hover cursor-pointer' : ''}`} key={row.id}>
+                        {row.getVisibleCells().map((cell) => {
+                          return (
+                            <td
+                              onClick={
+                                !disabledRowClickColumns.includes(cell.column.columnDef.id || '') &&
+                                (onRowClick || row.toggleExpanded())
+                                  ? (e) => {
+                                      if (onRowClick) onRowClick(e, row.original);
+                                      // A row that can expand toggles its
+                                      // sub-panel on click too, not just via
+                                      // the dedicated expand-arrow column.
+                                      if (canExpand) row.toggleExpanded();
+                                    }
+                                  : undefined
+                              }
+                              key={cell.id}
+                              style={{ width: cell.column.getSize() }}
+                            >
+                              <div className="table-data">
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                              </div>
                             </td>
-                          </tr>
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
+                          );
+                        })}
+                      </tr>
+                      {/* If the row is expanded, render the expanded UI as a separate row with a single cell that spans the width of the table */}
+                      {row.getIsExpanded() && ExpandedRow && (
+                        <tr className="table-row-horizontal">
+                          <td colSpan={row.getVisibleCells().length}>
+                            <ExpandedRow row={row} />
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })
+              )}
             </tbody>
             {showFooter ? (
               <tfoot>
@@ -418,8 +397,34 @@ function Table<T extends object>(
   );
 }
 
+function TableLoader<T extends object>({
+  component: LoaderComponent,
+  columns,
+  length = 10,
+  loading = true,
+}: TablePropsLoader & {
+  columns: ColumnDef<T>[];
+}) {
+  if (!loading) return null;
+
+  return Array.from({ length }).map((_, i) => (
+    <tr key={i} className="table-row-horizontal">
+      {columns.map((col) => (
+        <td key={col.id} style={{ width: col.size }}>
+          <div className="table-data">
+            {LoaderComponent ? (
+              <LoaderComponent />
+            ) : (
+              <Skeleton.Input active style={{ display: 'inline-block', width: col.size }} size="small" />
+            )}
+          </div>
+        </td>
+      ))}
+    </tr>
+  ));
+}
+
 const ForwardedTable = React.forwardRef(Table) as <T extends object>(
   props: TableProps<T> & React.RefAttributes<TableRef<T>>,
 ) => React.ReactElement | null;
-
 export default ForwardedTable;
